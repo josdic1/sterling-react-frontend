@@ -1,4 +1,4 @@
-// providers/AuthProvider.jsx
+// src/providers/AuthProvider.jsx
 import { useState, useEffect } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
@@ -8,7 +8,6 @@ export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // Check if user is logged in on mount
   useEffect(() => {
     const checkSession = async () => {
       const token = localStorage.getItem("token");
@@ -21,9 +20,9 @@ export function AuthProvider({ children }) {
         const resp = await fetch(`${API_URL}/users/me`, {
           headers: { Authorization: `Bearer ${token}` }
         });
+        
         if (resp.ok) {
-          const userData = await resp.json();
-          setUser(userData);
+          setUser(await resp.json());
         } else {
           localStorage.removeItem("token");
         }
@@ -33,10 +32,10 @@ export function AuthProvider({ children }) {
         setLoading(false);
       }
     };
+    
     checkSession();
   }, []);
 
-  // LOGIN
   const login = async (credentials) => {
     try {
       const resp = await fetch(`${API_URL}/users/login`, {
@@ -44,36 +43,51 @@ export function AuthProvider({ children }) {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(credentials)
       });
+      
       if (resp.ok) {
         const data = await resp.json();
         localStorage.setItem("token", data.access_token);
         setUser(data.user);
-        return true;
+        return { success: true };
       }
-      return false;
+      
+      return { success: false, error: "Invalid credentials" };
     } catch (err) {
       console.error("Login failed", err);
-      return false;
+      return { success: false, error: "Connection failed" };
     }
   };
 
-  // LOGOUT
+  const signup = async (userData) => {
+    try {
+      const resp = await fetch(`${API_URL}/users/signup`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(userData)
+      });
+      
+      if (resp.ok) {
+        const data = await resp.json();
+        localStorage.setItem("token", data.access_token);
+        setUser(data.user);
+        return { success: true };
+      }
+      
+      return { success: false, error: "Signup failed" };
+    } catch (err) {
+      console.error("Signup failed", err);
+      return { success: false, error: "Connection failed" };
+    }
+  };
+
   const logout = () => {
     localStorage.removeItem("token");
     setUser(null);
     window.location.href = "/login";
   };
 
-  const value = {
-    user,
-    loading,
-    loggedIn: !!user,
-    login,
-    logout
-  };
-
   return (
-    <AuthContext.Provider value={value}>
+    <AuthContext.Provider value={{ user, loading, loggedIn: !!user, login, signup, logout }}>
       {children}
     </AuthContext.Provider>
   );

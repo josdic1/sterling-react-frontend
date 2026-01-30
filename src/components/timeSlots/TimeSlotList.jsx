@@ -1,5 +1,5 @@
 // components/timeSlots/TimeSlotList.jsx
-import { TimeSlotItem } from "./timeSlotItem";
+import { TimeSlotItem } from "./TimeSlotItem";
 
 export function TimeSlotList({ timeSlots }) {
   const slotData = timeSlots?.map((slot) => (
@@ -9,7 +9,7 @@ export function TimeSlotList({ timeSlots }) {
   return (
     <div className="container">
       <h2>Time Slots</h2>
-      <table>
+      <table className="sterling-table">
         <thead>
           <tr>
             <th>ID</th>

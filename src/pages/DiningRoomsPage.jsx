@@ -1,14 +1,14 @@
-// pages/DiningRoomsPage.jsx
-import { useDiningRooms } from "../hooks/useDiningRooms";
+// src/pages/DiningRoomsPage.jsx
+import { useData } from "../hooks/useData";
 import { DiningRoomList } from "../components/diningRooms/DiningRoomList";
 
 export function DiningRoomsPage() {
-  const { diningRooms } = useDiningRooms();
+  const { diningRooms, loading } = useData();
 
   return (
-    <div className="container">
+    <div className="container dashboard-section">
       <h1>Dining Rooms</h1>
-      <DiningRoomList diningRooms={diningRooms} />
+      {loading ? <p>Loading rooms...</p> : <DiningRoomList diningRooms={diningRooms} />}
     </div>
   );
 }

@@ -1,14 +1,14 @@
-// pages/TimeSlotsPage.jsx
-import { useTimeSlots } from "../hooks/useTimeSlots";
-import { TimeSlotList } from "../components/timeSlots/timeSlotList";
+// src/pages/TimeSlotsPage.jsx
+import { useData } from "../hooks/useData";
+import { TimeSlotList } from "../components/timeSlots/TimeSlotList";
 
 export function TimeSlotsPage() {
-  const { timeSlots } = useTimeSlots();
+  const { timeSlots, loading } = useData();
 
   return (
-    <div className="container">
-      <h1>Time Slots</h1>
-      <TimeSlotList timeSlots={timeSlots} />
+    <div className="container dashboard-section">
+      <h1>Available Times</h1>
+      {loading ? <p>Loading schedule...</p> : <TimeSlotList timeSlots={timeSlots} />}
     </div>
   );
 }

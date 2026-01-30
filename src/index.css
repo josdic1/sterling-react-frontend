@@ -1,125 +1,1029 @@
+/* src/index.css */
 :root {
-  /* Sterling Boutique Palette */
-  --accent: #eb5638;
-  --black: #2b2b2b;
-  --cream: #ebe5c0;
+  --banking-black: #121212;
+  --banking-grey: #757575;
+  --sterling-accent: #eb5638;
   --white: #ffffff;
-  
-  font-family: 'Inter', system-ui, -apple-system, sans-serif;
-  line-height: 1.6;
-  background-color: var(--white);
-  color: var(--black);
+  --off-white: #f8f8f8;
+  --border-color: #e0e0e0;
+}
+
+* {
+  box-sizing: border-box;
 }
 
 body {
+  background-color: var(--white);
+  color: var(--banking-black);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  letter-spacing: -0.01em;
   margin: 0;
-  min-height: 100vh;
-  /* Removed the "place-items: center" that Vite forces on you */
-  display: block; 
+  padding: 0;
+  -webkit-font-smoothing: antialiased;
 }
 
-/* Layout Container */
 .container {
-  max-width: 1200px;
+  max-width: 100%;
+  padding: 1rem;
   margin: 0 auto;
-  padding: 2rem;
 }
 
-/* Typography */
-h1, h2, h3 {
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  color: var(--black);
-  margin-bottom: 1rem;
+@media (min-width: 768px) {
+  .container {
+    max-width: 1200px;
+    padding: 2rem;
+  }
 }
 
-/* Elegant Boutique Buttons */
-button, .btn {
-  background-color: var(--black);
-  color: var(--cream);
-  border: none;
-  padding: 0.75rem 1.5rem;
-  border-radius: 4px; /* Slight round, more professional than pills */
-  font-weight: 600;
-  cursor: pointer;
-  transition: all 0.2s ease;
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  font-size: 0.85rem;
-}
-
-button:hover {
-  background-color: var(--accent);
-  color: var(--white);
-}
-
-/* Navigation Links */
-a {
-  color: var(--black);
-  text-decoration: none;
-  font-weight: 600;
-  border-bottom: 2px solid transparent;
-  transition: border-color 0.2s;
-}
-
-a:hover {
-  border-color: var(--accent);
-}
-
-/* Boutique Table Style (For your Members/Reservations) */
-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 2rem;
-  background-color: var(--white);
-}
-
-th {
-  text-align: left;
-  background-color: var(--cream);
-  padding: 1rem;
-  text-transform: uppercase;
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
-}
-
-td {
-  padding: 1rem;
-  border-bottom: 1px solid #eee;
-}
-
-/* Form Inputs */
-input {
-  width: 100%;
-  padding: 0.8rem;
-  margin: 0.5rem 0;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  background-color: var(--white);
-}
-
-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
-
-/* Navbar specific class */
-.navbar {
-  background-color: var(--black);
-  padding: 1rem 2rem;
+/* ==================== NAVIGATION ==================== */
+.sterling-nav {
   display: flex;
   justify-content: space-between;
   align-items: center;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  background: var(--white);
+  position: sticky;
+  top: 0;
+  z-index: 100;
 }
 
-.nav-logo {
-  color: var(--accent) !important;
-  font-size: 1.5rem;
-  font-weight: 800;
-  border: none !important;
+.nav-brand {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
 }
 
 .nav-links a {
-  color: var(--cream);
-  margin-left: 1.5rem;
+  color: var(--banking-grey);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-links a:hover {
+  color: var(--banking-black);
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.nav-user span {
+  display: none;
+  font-size: 0.7rem;
+  font-weight: 700;
+  color: var(--banking-grey);
+}
+
+@media (min-width: 768px) {
+  .nav-user span {
+    display: block;
+  }
+}
+
+.btn-logout {
+  background: transparent;
+  color: var(--sterling-accent);
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+.btn-logout:hover {
+  background: var(--sterling-accent);
+  color: white;
+}
+
+/* ==================== BUTTONS ==================== */
+button {
+  background: var(--banking-black);
+  color: white;
+  border: none;
+  padding: 1rem 2rem;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  cursor: pointer;
+  transition: all 0.2s;
+  border-radius: 0;
+  font-family: inherit;
+}
+
+button:hover {
+  background: var(--sterling-accent);
+  transform: translateY(-1px);
+}
+
+button:active {
+  transform: translateY(0);
+}
+
+.btn-primary {
+  background: var(--banking-black);
+  width: 100%;
+  padding: 1.25rem;
+}
+
+.btn-primary:hover {
+  background: var(--sterling-accent);
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--banking-black);
+  border: 1px solid var(--banking-black);
+}
+
+.btn-secondary:hover {
+  background: var(--banking-black);
+  color: white;
+}
+
+.btn-text-only {
+  background: none;
+  color: var(--sterling-accent);
+  padding: 0;
+  font-size: 0.7rem;
+  text-decoration: underline;
+  border: none;
+}
+
+.btn-text-only:hover {
+  background: none;
+  color: var(--banking-black);
+  transform: none;
+}
+
+/* ==================== PAGE HEADERS ==================== */
+.page-header {
+  border-bottom: 2px solid var(--banking-black);
+  padding-bottom: 1.5rem;
+  margin-bottom: 2rem;
+  position: relative;
+}
+
+.page-header h1 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem 0;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+@media (min-width: 768px) {
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end;
+  }
+  
+  .page-header h1 {
+    margin: 0;
+    font-size: 2rem;
+  }
+}
+
+/* Floating Action Button for Mobile */
+.fab {
+  position: fixed;
+  bottom: 1.5rem;
+  right: 1.5rem;
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  background: var(--sterling-accent);
+  color: white;
+  border: none;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  z-index: 50;
+}
+
+.fab:hover {
+  background: var(--banking-black);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+  transform: scale(1.05);
+}
+
+@media (min-width: 768px) {
+  .fab {
+    display: none;
+  }
+}
+
+/* Edit Button - Icon Only on Mobile */
+.btn-edit {
+  position: absolute;
+  top: 0;
+  right: 0;
+  background: transparent;
+  color: var(--banking-grey);
+  padding: 0.5rem;
+  border: none;
+  font-size: 1.25rem;
+}
+
+.btn-edit:hover {
+  color: var(--sterling-accent);
+  background: transparent;
+  transform: none;
+}
+
+@media (min-width: 768px) {
+  .btn-edit {
+    position: static;
+    background: var(--banking-black);
+    color: white;
+    padding: 1rem 2rem;
+    font-size: 0.75rem;
+  }
+  
+  .btn-edit:hover {
+    background: var(--sterling-accent);
+    color: white;
+  }
+}
+
+/* ==================== CARDS ==================== */
+.info-summary-card {
+  background: var(--off-white);
+  border: 1px solid var(--border-color);
+  padding: 2rem;
+  margin-bottom: 2rem;
+  border-left: 4px solid var(--banking-black);
+}
+
+.info-summary-card h2 {
+  font-size: 1.75rem;
+  text-transform: uppercase;
+  margin: 0.5rem 0 1rem 0;
+  letter-spacing: -0.03em;
+}
+
+@media (min-width: 768px) {
+  .info-summary-card {
+    padding: 3rem;
+    margin-bottom: 3rem;
+  }
+  
+  .info-summary-card h2 {
+    font-size: 2.5rem;
+  }
+}
+
+.text-small {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  color: var(--banking-grey);
+  margin-bottom: 0.25rem;
+  letter-spacing: 0.1em;
+}
+
+.details-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .details-grid {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 4rem;
+    margin-top: 2rem;
+  }
+}
+
+/* ==================== RESERVATION CARDS ==================== */
+.reservation-cards {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .reservation-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1.5rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .reservation-cards {
+    grid-template-columns: repeat(3, 1fr);
+  }
+}
+
+.reservation-item {
+  background: var(--off-white);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--banking-black);
+  padding: 1.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.reservation-item:active {
+  transform: scale(0.98);
+}
+
+@media (min-width: 768px) {
+  .reservation-item:hover {
+    border-left-color: var(--sterling-accent);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  }
+}
+
+.res-info {
+  flex: 1;
+}
+
+.res-date {
+  font-weight: 700;
+  font-size: 1rem;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.res-room {
+  font-size: 0.7rem;
+  color: var(--banking-grey);
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  margin: 0 0 0.5rem 0;
+  text-transform: uppercase;
+}
+
+.res-notes {
+  color: var(--banking-grey);
+  font-size: 0.85rem;
+  font-style: italic;
+  margin: 0;
+}
+
+.btn-delete-small {
+  background: transparent;
+  color: var(--sterling-accent);
+  padding: 0.5rem 0.75rem;
+  font-size: 0.65rem;
+  border: 1px solid var(--sterling-accent);
+  flex-shrink: 0;
+}
+
+.btn-delete-small:hover {
+  background: var(--sterling-accent);
+  color: white;
+}
+
+/* ==================== FORMS ==================== */
+.banking-form {
+  max-width: 100%;
+  margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+  .banking-form {
+    max-width: 600px;
+  }
+}
+
+.input-group {
+  margin-bottom: 2rem;
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--border-color);
+}
+
+.input-group label {
+  display: block;
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.15em;
+  color: var(--banking-grey);
+  margin-bottom: 0.75rem;
+}
+
+.input-group input,
+.input-group select,
+.input-group textarea {
+  width: 100%;
+  border: none;
+  background: transparent;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--banking-black);
+  padding: 0.5rem 0;
+  appearance: none;
+}
+
+.input-group select {
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23121212' d='M6 9L1 4h10z'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 0.5rem center;
+  padding-right: 2rem;
+}
+
+.input-group input:focus,
+.input-group select:focus,
+.input-group textarea:focus {
+  outline: none;
+  color: var(--sterling-accent);
+}
+
+.input-group textarea {
+  min-height: 100px;
+  resize: vertical;
+}
+
+.form-actions {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+  .form-actions {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+/* ==================== LAYOUT ==================== */
+.detail-layout {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 2rem;
+}
+
+@media (min-width: 1024px) {
+  .detail-layout {
+    grid-template-columns: 2fr 1fr;
+    gap: 3rem;
+  }
+}
+
+/* ==================== ATTENDEE MANAGEMENT ==================== */
+.attendee-management {
+  margin-bottom: 2rem;
+}
+
+.section-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1rem;
+  padding-bottom: 0.5rem;
+  border-bottom: 1px solid var(--banking-black);
+}
+
+.sterling-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 1rem;
+}
+
+.sterling-table th {
+  text-align: left;
+  text-transform: uppercase;
+  font-size: 0.6rem;
+  letter-spacing: 0.1em;
+  padding: 0.75rem 0.5rem;
+  border-bottom: 2px solid var(--banking-black);
+  font-weight: 900;
+}
+
+.sterling-table td {
+  padding: 1rem 0.5rem;
+  border-bottom: 1px solid var(--border-color);
+  font-size: 0.85rem;
+}
+
+.sterling-table tr {
+  transition: background 0.1s;
+}
+
+@media (min-width: 768px) {
+  .sterling-table tr:hover {
+    background: #fcfcfc;
+  }
+}
+
+/* Quick Seat Form */
+.sidebar-card {
+  border: 1px solid var(--border-color);
+  padding: 1.5rem;
+  background: var(--off-white);
+  position: sticky;
+  top: 5rem;
+}
+
+.guest-quick-form {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 0.75rem;
+}
+
+.guest-quick-form input {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px solid var(--border-color);
+  background: white;
+  font-family: inherit;
+  font-size: 0.85rem;
+}
+
+.guest-quick-form input:focus {
+  outline: 2px solid var(--sterling-accent);
+  border-color: var(--sterling-accent);
+}
+
+.guest-quick-form button {
+  width: 100%;
+  padding: 1rem;
+}
+
+/* ==================== UTILITIES ==================== */
+.font-bold {
+  font-weight: 700;
+}
+
+.text-muted {
+  color: var(--banking-grey);
+  font-style: italic;
+}
+
+.text-right {
+  text-align: right;
+}
+
+.text-uppercase {
+  text-transform: uppercase;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+}
+
+.loading-state {
+  padding: 4rem 2rem;
+  text-align: center;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.2em;
+  color: var(--banking-grey);
+  font-size: 0.7rem;
+}
+
+.empty-msg {
+  text-align: center;
+  color: var(--banking-grey);
+  font-style: italic;
+  padding: 3rem 1rem;
+  font-size: 0.9rem;
+}
+
+/* ==================== LOGIN PAGE ==================== */
+.login-page-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+  background: var(--off-white);
+}
+
+.login-card {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--banking-black);
+  padding: 2rem;
+  width: 100%;
+  max-width: 400px;
+  position: relative;
+}
+
+.login-card h1 {
+  font-size: 1.5rem;
+  margin: 0 0 2rem 0;
+  text-transform: uppercase;
+  letter-spacing: -0.02em;
+}
+
+.login-card form {
+  display: grid;
+  gap: 1.5rem;
+}
+
+.login-card input {
+  width: 100%;
+  padding: 1rem;
+  border: 1px solid var(--border-color);
+  background: white;
+  font-family: inherit;
+  font-size: 1rem;
+}
+
+.login-card input:focus {
+  outline: 2px solid var(--sterling-accent);
+  border-color: var(--sterling-accent);
+}
+
+.login-card button[type="submit"] {
+  width: 100%;
+}
+
+.login-card p {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--banking-grey);
+  margin: 0;
+}
+
+.login-card a {
+  color: var(--sterling-accent);
+  text-decoration: none;
+  font-weight: 700;
+}
+
+.login-error {
+  background: #fff5f5;
+  color: var(--sterling-accent);
+  padding: 1rem;
+  border: 1px solid var(--sterling-accent);
+  font-size: 0.85rem;
+  text-align: center;
+}
+
+.magic-prefill-btn {
+  position: absolute;
+  top: 1rem;
+  right: 1rem;
+  background: transparent;
+  color: var(--banking-grey);
+  padding: 0.5rem;
+  border: none;
+  cursor: pointer;
+}
+
+.magic-prefill-btn:hover {
+  color: var(--sterling-accent);
+  background: transparent;
+  transform: none;
+}
+/* Add to index.css */
+.btn-edit-text {
+  display: none;
+}
+
+@media (min-width: 768px) {
+  .btn-edit-text {
+    display: inline;
+  }
+  
+  .btn-edit svg {
+    display: none;
+  }
+}
+
+/* Quick Add Member Buttons */
+.quick-add-members {
+  display: grid;
+  gap: 0.75rem;
+}
+
+.btn-quick-add-member {
+  width: 100%;
+  background: white;
+  color: var(--banking-black);
+  border: 1px solid var(--border-color);
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  text-align: left;
+  font-size: 0.85rem;
+  font-weight: 600;
+  transition: all 0.2s;
+}
+
+.btn-quick-add-member:hover {
+  background: var(--banking-black);
+  color: white;
+  border-color: var(--banking-black);
+  transform: translateY(-1px);
+}
+
+.btn-quick-add-member svg {
+  flex-shrink: 0;
+}
+
+.btn-quick-add-member span:first-of-type {
+  flex: 1;
+}
+
+.member-relation {
+  color: var(--banking-grey);
+  font-size: 0.75rem;
+  font-weight: 400;
+  font-style: italic;
+}
+
+.btn-quick-add-member:hover .member-relation {
+  color: rgba(255, 255, 255, 0.7);
+}
+
+/* Sidebar spacing */
+.sidebar-card + .sidebar-card {
+  margin-top: 1.5rem;
+}
+
+/* ==================== TOASTS ==================== */
+.toast-container {
+  position: fixed;
+  top: 1rem;
+  right: 1rem;
+  z-index: 1000;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  max-width: 90vw;
+}
+
+@media (min-width: 768px) {
+  .toast-container {
+    max-width: 400px;
+  }
+}
+
+.toast {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-left-width: 4px;
+  padding: 1rem;
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  animation: slideIn 0.3s ease-out;
+}
+
+@keyframes slideIn {
+  from {
+    transform: translateX(400px);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+.toast-success {
+  border-left-color: #10b981;
+}
+
+.toast-error {
+  border-left-color: var(--sterling-accent);
+}
+
+.toast-info {
+  border-left-color: #3b82f6;
+}
+
+.toast-icon {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+}
+
+.toast-success .toast-icon {
+  color: #10b981;
+}
+
+.toast-error .toast-icon {
+  color: var(--sterling-accent);
+}
+
+.toast-info .toast-icon {
+  color: #3b82f6;
+}
+
+.toast-message {
+  flex: 1;
+  font-size: 0.85rem;
+  font-weight: 600;
+}
+
+.toast-close {
+  background: none;
+  border: none;
+  color: var(--banking-grey);
+  padding: 0.25rem;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+}
+
+.toast-close:hover {
+  color: var(--banking-black);
+  background: none;
+  transform: none;
+}
+
+/* ==================== SAVE FLOATER ==================== */
+.save-floater {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: white;
+  border-top: 2px solid var(--banking-black);
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  z-index: 999;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+.save-floater-content {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem;
+  border-bottom: 1px solid var(--border-color);
+  color: #10b981;
+  font-weight: 600;
+  font-size: 0.85rem;
+}
+
+.save-floater-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0;
+}
+
+.btn-floater-home,
+.btn-floater-dismiss {
+  padding: 1rem;
+  border: none;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.btn-floater-home {
+  background: var(--banking-black);
+  color: white;
+}
+
+.btn-floater-home:hover {
+  background: var(--sterling-accent);
+}
+
+.btn-floater-dismiss {
+  background: transparent;
+  color: var(--banking-grey);
+  border-left: 1px solid var(--border-color);
+}
+
+.btn-floater-dismiss:hover {
+  background: var(--off-white);
+  color: var(--banking-black);
+}
+
+/* Reservation card header with guest count */
+.res-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.guest-count-badge {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--banking-black);
+  color: white;
+  padding: 0.35rem 0.65rem;
+  border-radius: 50px;
+  font-size: 0.7rem;
+  font-weight: 700;
+}
+
+.guest-count-badge svg {
+  flex-shrink: 0;
+}
+
+.sterling-nav {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  padding: 1.5rem 4rem;
+  border-bottom: 1px solid #e0e0e0;
+  font-size: 0.7rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.nav-brand {
+  font-size: 0.75rem;
+  font-weight: 900;
+  letter-spacing: 0.15em;
+  cursor: pointer;
+  transition: all 0.2s;
+  padding: 0.5rem;
+  margin: -0.5rem;
+  text-decoration: none;
+  color: var(--banking-black);
+  grid-column: 1 / 2; /* Takes up first column */
+}
+
+.nav-links {
+  display: flex;
+  gap: 1.5rem;
+  align-items: center;
+  justify-self: center; /* Centers in middle column */
+}
+
+.nav-user {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  justify-self: end; /* Right side */
+}
+
+.nav-brand:hover {
+  background: var(--off-white);
+  color: var(--sterling-accent);
+}
+
+.btn-close {
+  background: transparent;
+  color: var(--banking-grey);
+  padding: 0.5rem;
+  border: none;
+}
+
+.btn-close:hover {
+  background: transparent;
+  color: var(--sterling-accent);
+  transform: none;
+}
+
+.btn-secondary {
+  background: white;
+  color: var(--banking-black);
+  border: 1px solid var(--banking-black);
+  width: 100%;
+}
+
+.btn-secondary:hover {
+  background: var(--banking-black);
+  color: white;
+}
+
+/* Make form actions stack on mobile, side-by-side on desktop */
+@media (min-width: 768px) {
+  .form-actions {
+    grid-template-columns: 1fr auto;
+  }
+  
+  .btn-secondary {
+    width: auto;
+    min-width: 150px;
+  }
 }

@@ -1,34 +1,27 @@
-import { NavLink } from "react-router-dom";
-import { Users } from "lucide-react";
+// src/components/shared/NavBar.jsx
+import { Link, useNavigate } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
+import { Home, Calendar, Users, LogOut } from "lucide-react";
 
 export function NavBar() {
-    const { loggedIn, logout, user } = useAuth();
+  const { user, logout } = useAuth();
 
-    return (
-        <nav className="navbar">
-            <NavLink to="/" className="nav-logo">
-                
-            </NavLink>
-
-            <div className="nav-links">
-                {/* Only show these if the user is logged in */}
-                {loggedIn ? (
-                    <>
-                      Hello! {user.name}
-                      <NavLink to="/">HOME</NavLink>
-                        <NavLink to="/reservations/new">ADD Reservation</NavLink>
-                         <NavLink to="/members/new">ADD Member</NavLink>
-                        <button onClick={logout} className="logout-btn">
-                            Logout
-                        </button>
-                    </>
-                ) : (
-                    <>
-                        <NavLink to="/login">Login</NavLink>
-                    </>
-                )}
-            </div>
-        </nav>
-    );
+  return (
+    <nav className="sterling-nav">
+      <Link to="/" className="nav-brand">
+        STERLING
+      </Link>
+      <div className="nav-links">
+        <Link to="/" title="Dashboard"><Home size={20} /></Link>
+        <Link to="/reservations/new" title="New Booking"><Calendar size={20} /></Link>
+        <Link to="/members" title="Family"><Users size={20} /></Link>
+      </div>
+      <div className="nav-user">
+        <span>{user?.name?.toUpperCase()}</span>
+        <button onClick={logout} className="btn-logout" title="Logout">
+          <LogOut size={16} />
+        </button>
+      </div>
+    </nav>
+  );
 }

@@ -1,23 +1,48 @@
-// pages/HomePage.jsx
+// src/pages/HomePage.jsx
 import { useAuth } from "../hooks/useAuth";
-import { MembersPage } from "./MembersPage";
-import { DiningRoomsPage } from "./DiningRoomsPage";
-import { TimeSlotsPage } from "./TimeSlotsPage";
+import { useData } from "../hooks/useData";
+import { useNavigate } from "react-router-dom";
+import { ReservationList } from "../components/reservations/ReservationList";
+import { MemberList } from "../components/members/MemberList";
+import { Plus } from "lucide-react";
 
 export function HomePage() {
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
+  const { reservations, members, loading } = useData();
+  const navigate = useNavigate();
 
-  if (loading) {
-    return <div>Loading...</div>;
+  if (authLoading || loading) {
+    return <div className="loading-state">Loading Sterling System...</div>;
   }
 
   return (
-    <div className="container">
-      <h1>Welcome, {user?.name}!</h1>
-      
-      <MembersPage />
-      <DiningRoomsPage />
-      <TimeSlotsPage />
+    <div className="container dashboard">
+      <header className="dashboard-welcome">
+        <h1>Welcome, {user?.name}!</h1>
+      </header>
+
+      <section className="dashboard-section">
+        <header className="section-header">
+          <h2>Active Reservations</h2>
+        </header>
+        <ReservationList reservations={reservations} />
+      </section>
+
+      <section className="dashboard-section">
+        <header className="section-header">
+          <h2>Family Ledger</h2>
+        </header>
+        <MemberList members={members} />
+      </section>
+
+      {/* Floating Action Button for Mobile */}
+      <button 
+        className="fab" 
+        onClick={() => navigate('/reservations/new')}
+        title="New Booking"
+      >
+        <Plus size={24} />
+      </button>
     </div>
   );
 }

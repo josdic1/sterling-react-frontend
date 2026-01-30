@@ -1,24 +1,32 @@
-// components/diningRooms/DiningRoomList.jsx
-import { DiningRoomItem } from "./DiningRoomItem";
+import { useData } from "../../hooks/useData";
 
-export function DiningRoomList({ diningRooms }) {
-  const roomData = diningRooms?.map((diningRoom) => (
-    <DiningRoomItem key={diningRoom.id} diningRoom={diningRoom} />
-  ));
+export function DiningRoomList() {
+  const { diningRooms, loading } = useData();
+
+  if (loading) return <div className="loading-state">VERIFYING LOCATIONS...</div>;
 
   return (
     <div className="container">
-      <h2>Dining Rooms</h2>
-      <table>
+      <header className="page-header">
+        <h1 className="text-uppercase">Location Registry</h1>
+      </header>
+      <table className="sterling-table">
         <thead>
           <tr>
             <th>ID</th>
-            <th>NAME</th>
-            <th>CAPACITY</th>
-            {/* No ACTIONS column */}
+            <th>Room Identity</th>
+            <th className="text-right">Capacity</th>
           </tr>
         </thead>
-        <tbody>{roomData}</tbody>
+        <tbody>
+          {diningRooms.map((room) => (
+            <tr key={room.id} className="ledger-row">
+              <td>{room.id}</td>
+              <td className="font-bold">{room.name.toUpperCase()}</td>
+              <td className="text-right">{room.capacity} SEATS</td>
+            </tr>
+          ))}
+        </tbody>
       </table>
     </div>
   );
