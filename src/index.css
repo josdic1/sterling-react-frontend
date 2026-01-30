@@ -1040,3 +1040,70 @@ button:active {
 .time-badge svg, .guest-count-badge svg {
   opacity: 0.8;
 }
+
+/* Better Account Grid */
+.account-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr); /* 2 per row makes them big and clickable */
+  gap: 16px; /* More breathing room */
+  margin-bottom: 2rem;
+}
+
+.account-select-btn {
+  display: flex;
+  flex-direction: row; /* Icon next to name for more width */
+  align-items: center;
+  gap: 12px;
+  padding: 16px;
+  background: #ffffff;
+  border: 2px solid #f0f0f0; /* Thicker borders */
+  border-radius: 4px;
+  color: var(--acc-color);
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  cursor: pointer;
+}
+
+.account-select-btn:hover {
+  border-color: var(--acc-color);
+  background: #fafafa;
+  transform: scale(1.02);
+}
+
+.account-select-btn span {
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 1px;
+}
+
+/* NavBar User Identity */
+.user-status-group {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 4px 12px;
+  background: #f8f9fa;
+  border: 1px solid #dee2e6;
+}
+
+.user-identity {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.user-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  color: #888;
+}
+
+.user-name {
+  font-size: 0.75rem;
+  font-weight: 800;
+  color: #1a1a1a;
+  letter-spacing: 0.5px;
+}
+
+.status-icon {
+  color: #2E4A62;
+}
