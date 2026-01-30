@@ -1,12 +1,11 @@
-// src/pages/ReservationDetailPage.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useData } from "../hooks/useData";
-import { useToastTrigger } from "../hooks/useToast"; // ← Changed this
+import { useToastTrigger } from "../hooks/useToast";
 import { AttendeeList } from "../components/attendees/AttendeeList";
 import { AttendeeForm } from "../components/attendees/AttendeeForm";
 import { SaveFloater } from "../components/shared/SaveFloater";
-import { Edit3, UserPlus } from "lucide-react";
+import { Edit3, UserPlus, Clock } from "lucide-react";
 
 export function ReservationDetailPage() {
   const { id } = useParams();
@@ -14,10 +13,11 @@ export function ReservationDetailPage() {
   const [needsFetch, setNeedsFetch] = useState(true);
   const [showSaveFloater, setShowSaveFloater] = useState(false);
   
-  const { addToast } = useToastTrigger(); // ← Changed this
+  const { addToast } = useToastTrigger();
   
   const { 
     diningRooms, 
+    timeSlots,
     reservations, 
     members,
     currentAttendees,
@@ -42,7 +42,6 @@ export function ReservationDetailPage() {
       }
       
       const current = await fetchReservationById(resId);
-      
       if (!current) {
         navigate("/", { replace: true });
         return;
@@ -53,7 +52,7 @@ export function ReservationDetailPage() {
     };
     
     sync();
-  }, [resId]);
+  }, [resId, reservation, fetchReservationById, fetchAttendees, navigate]);
 
   const unseatedMembers = members.filter(
     member => !currentAttendees.find(att => att.member_id === member.id)
@@ -77,7 +76,6 @@ export function ReservationDetailPage() {
 
   const handleRemoveAttendee = async (attendeeId, attendeeName) => {
     const result = await removeAttendee(resId, attendeeId);
-
     if (result.success) {
       addToast(`${attendeeName} removed from table`, "success");
       setShowSaveFloater(true);
@@ -91,10 +89,10 @@ export function ReservationDetailPage() {
   }
 
   const room = diningRooms.find(r => r.id === reservation?.dining_room_id);
+  const slot = timeSlots.find(s => s.id === reservation?.time_slot_id);
 
   return (
     <div className="container">
-      {/* Removed ToastContainer - it's in App.jsx now */}
       <SaveFloater show={showSaveFloater} onDismiss={() => setShowSaveFloater(false)} />
 
       <header className="page-header">
@@ -117,6 +115,17 @@ export function ReservationDetailPage() {
           <div>
             <span className="text-small">Transaction Date</span>
             <p className="font-bold">{reservation?.date}</p>
+          </div>
+          <div>
+            <span className="text-small">Scheduled Window</span>
+            <p className="font-bold">
+              {slot ? (
+                <>
+                  <Clock size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
+                  {slot.name} ({slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)})
+                </>
+              ) : "UNSCHEDULED"}
+            </p>
           </div>
           <div>
             <span className="text-small">Entry Notes</span>

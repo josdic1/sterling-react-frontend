@@ -1,10 +1,11 @@
-// src/providers/DataProvider.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import { DataContext } from "../contexts/DataContext";
+import { AuthContext } from "../contexts/AuthContext";
 
 const API_URL = "http://localhost:8080";
 
 export function DataProvider({ children }) {
+  const { loggedIn } = useContext(AuthContext);
   const [diningRooms, setDiningRooms] = useState([]);
   const [timeSlots, setTimeSlots] = useState([]);
   const [reservations, setReservations] = useState([]);
@@ -12,17 +13,18 @@ export function DataProvider({ children }) {
   const [currentAttendees, setCurrentAttendees] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  // Load everything on mount
+  // Load everything when the user logs in or the app mounts with a token
   useEffect(() => {
     const loadAll = async () => {
-      const token = localStorage.getItem("token"); // Move inside useEffect
+      const token = localStorage.getItem("token");
       
-      if (!token) {
+      if (!token || !loggedIn) {
         setLoading(false);
         return;
       }
       
       try {
+        setLoading(true);
         const [roomsRes, slotsRes, reservationsRes, membersRes] = await Promise.all([
           fetch(`${API_URL}/dining-rooms`, { headers: { Authorization: `Bearer ${token}` } }),
           fetch(`${API_URL}/time-slots`, { headers: { Authorization: `Bearer ${token}` } }),
@@ -42,9 +44,8 @@ export function DataProvider({ children }) {
     };
 
     loadAll();
-  }, []); // Empty dependency array - runs once on mount
+  }, [loggedIn]); // Triggers fetch automatically once loggedIn becomes true
 
-  // Get token fresh each time for API calls
   const getToken = () => localStorage.getItem("token");
 
   // ==================== RESERVATIONS ====================
