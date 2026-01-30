@@ -1,17 +1,15 @@
-import { Outlet } from "react-router-dom";
-import { NavBar } from "./components/NavBar";
-import { AuthProvider } from "./providers/AuthProvider";
+// App.jsx
+import { Outlet } from 'react-router-dom'
+import { NavBar } from './components/shared/NavBar';
 
 function App() {
   return (
-    <AuthProvider>
-      <div className="app">
-        <NavBar />
-        <main className="main-content">
-          <Outlet />
-        </main>
-      </div>
-    </AuthProvider>
+    <div>
+      <NavBar />
+      <main>
+        <Outlet /> 
+      </main>
+    </div>
   );
 }
 
