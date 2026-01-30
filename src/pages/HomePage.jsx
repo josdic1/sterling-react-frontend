@@ -1,24 +1,23 @@
+// pages/HomePage.jsx
 import { useAuth } from "../hooks/useAuth";
-import { useDiningRoom } from "../hooks/useDiningRoom";
-import { useMember } from "../hooks/useMember";
-import { MemberList } from "../components/Members/MemberList";
-import { DiningRoomList } from "../components/DiningRooms/DiningRoomList";
+import { MembersPage } from "./MembersPage";
+import { DiningRoomsPage } from "./DiningRoomsPage";
+import { TimeSlotsPage } from "./TimeSlotsPage";
 
 export function HomePage() {
-  const { user, loading: authLoading } = useAuth();
-  const { members, loading: membersLoading } = useMember();
-  const { diningRooms, loading: roomsLoading } = useDiningRoom();
+  const { user, loading } = useAuth();
 
-  // Check ALL loading states
-  if (authLoading || membersLoading || roomsLoading) {
+  if (loading) {
     return <div>Loading...</div>;
   }
 
   return (
-    <>
-      <h1>Welcome, {user.name}!</h1>
-      <MemberList members={members} />
-      <DiningRoomList diningRooms={diningRooms} />
-    </>
+    <div className="container">
+      <h1>Welcome, {user?.name}!</h1>
+      
+      <MembersPage />
+      <DiningRoomsPage />
+      <TimeSlotsPage />
+    </div>
   );
 }

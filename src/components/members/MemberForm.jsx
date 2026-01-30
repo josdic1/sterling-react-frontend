@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useMember } from "../../hooks/useMember"; // ← Fixed
+import { useMembers } from "../../hooks/useMembers"; // ← Fixed
 
 export function MemberForm() {
-  const { members, createMember, updateMember } = useMember(); // ← Fixed
+  const { members, createMember, updateMember } = useMembers(); // ← Fixed
   const { id } = useParams();
   const navigate = useNavigate();
   const [formData, setFormData] = useState({
@@ -37,7 +37,7 @@ export function MemberForm() {
   };
 
   const onCancel = () => {
-    navigate(-1);
+   navigate('/')
     onClear();
   };
 
@@ -108,7 +108,7 @@ export function MemberForm() {
         <button type="button" onClick={onClear}>
           Clear
         </button>
-        <button type=" button" onClick={onCancel}>
+        <button type="button" onClick={onCancel}>
           Cancel
         </button>
       </form>

@@ -1,9 +1,9 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
-import { useDiningRoom } from "../../hooks/useDiningRoom"; // ← Added
+import { useDiningRooms } from "../../hooks/useDiningRoom"; // ← Added
 
 export function DiningRoomForm() {
-  const { diningRooms, createDiningRoom, updateDiningRoom } = useDiningRoom(); // ← Fixed
+  const { diningRooms, createDiningRoom, updateDiningRoom } = useDiningRooms(); // ← Fixed
   const { id } = useParams();
   const navigate = useNavigate();
 

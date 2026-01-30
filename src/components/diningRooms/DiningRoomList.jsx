@@ -1,8 +1,9 @@
+// components/diningRooms/DiningRoomList.jsx
 import { DiningRoomItem } from "./DiningRoomItem";
 
 export function DiningRoomList({ diningRooms }) {
   const roomData = diningRooms?.map((diningRoom) => (
-    <DiningRoomItem key={diningRoom.id} diningRoom={diningRoom} /> 
+    <DiningRoomItem key={diningRoom.id} diningRoom={diningRoom} />
   ));
 
   return (
@@ -14,7 +15,7 @@ export function DiningRoomList({ diningRooms }) {
             <th>ID</th>
             <th>NAME</th>
             <th>CAPACITY</th>
-            <th>ACTIONS</th>
+            {/* No ACTIONS column */}
           </tr>
         </thead>
         <tbody>{roomData}</tbody>

@@ -1,8 +1,8 @@
 import { useNavigate } from "react-router-dom";
-import { useMember } from "../../hooks/useMember";
+import { useMembers } from "../../hooks/useMembers";
 
 export function MemberItem({ member }) {
-  const { deleteMember } = useMember();
+  const { deleteMember } = useMembers();
   const navigate = useNavigate();
 
   return (
