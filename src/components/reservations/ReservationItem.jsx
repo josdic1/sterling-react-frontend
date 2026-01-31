@@ -1,13 +1,12 @@
 import { useNavigate } from "react-router-dom";
 import { useData } from "../../hooks/useData";
-import { Users, Clock } from "lucide-react";
+import { Users, Clock, Trash2 } from "lucide-react";
 
 export function ReservationItem({ reservation }) {
   const navigate = useNavigate();
-  const { deleteReservation, diningRooms, timeSlots } = useData();
+  const { deleteReservation, diningRooms } = useData();
 
   const room = diningRooms?.find(r => r.id === reservation.dining_room_id);
-  const slot = timeSlots?.find(s => s.id === reservation.time_slot_id);
 
   const handleDelete = async (e) => {
     e.stopPropagation();
@@ -16,31 +15,53 @@ export function ReservationItem({ reservation }) {
     }
   };
 
+  // Convert 24hr time to 12hr AM/PM format
+  const formatTime = (time24) => {
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
+
+  // Format date to be cleaner with year (e.g., "FEB 6")
+  const formatDate = (dateStr) => {
+    const date = new Date(dateStr + 'T00:00:00');
+    const month = date.toLocaleDateString('en-US', { month: 'short' }).toUpperCase();
+    const day = date.getDate();
+    return { month, day };
+  };
+
+  const { month, day } = formatDate(reservation.date);
+
   return (
     <div className="reservation-item" onClick={() => navigate(`/reservations/${reservation.id}`)}>
-      <div className="res-info">
-        <div className="res-header">
-          <p className="res-date">{reservation.date}</p>
-          <div className="badge-group" style={{ display: 'flex', gap: '8px' }}>
-            {slot && (
-              <div className="time-badge">
-                <Clock size={14} />
-                <span>{slot.name}</span>
-              </div>
-            )}
-            {reservation.attendee_count > 0 && (
-              <div className="guest-count-badge">
-                <Users size={14} />
-                <span>{reservation.attendee_count}</span>
-              </div>
-            )}
-          </div>
-        </div>
-        <p className="res-room">{room?.name.toUpperCase() || "NO LOCATION SET"}</p>
-        <p className="res-notes">{reservation.notes || "No notes."}</p>
+      <div className="res-date-block">
+        <span className="res-month">{month}</span>
+        <span className="res-day">{day}</span>
       </div>
-      <button className="btn-delete-small" onClick={handleDelete}>
-        Delete
+
+      <div className="res-content">
+        <div className="res-time-row">
+          <Clock size={14} />
+          <span>{formatTime(reservation.start_time)} - {formatTime(reservation.end_time)}</span>
+        </div>
+        
+        <h3 className="res-room">{room?.name || "NO LOCATION"}</h3>
+        
+        <p className="res-notes">{reservation.notes || "No notes"}</p>
+
+        {reservation.attendee_count > 0 && (
+          <div className="res-guest-count">
+            <Users size={14} />
+            <span>{reservation.attendee_count} {reservation.attendee_count === 1 ? 'Guest' : 'Guests'}</span>
+          </div>
+        )}
+      </div>
+
+      <button className="btn-delete-icon" onClick={handleDelete} title="Delete Reservation">
+        <Trash2 size={18} />
       </button>
     </div>
   );

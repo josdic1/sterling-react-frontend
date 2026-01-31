@@ -322,41 +322,6 @@ button:active {
   gap: 0.75rem;
 }
 
-/* Floater Action Buttons */
-.btn-floater-home,
-.btn-floater-dismiss {
-  padding: 1rem;
-  border: none;
-  font-weight: 700;
-  font-size: 0.75rem;
-  text-transform: uppercase;
-  letter-spacing: 0.1em;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-}
-
-.btn-floater-home {
-  background: var(--banking-black);
-  color: white;
-}
-
-.btn-floater-home:hover {
-  background: var(--sterling-accent);
-}
-
-.btn-floater-dismiss {
-  background: transparent;
-  color: var(--banking-grey);
-  border-left: 1px solid var(--border-color);
-}
-
-.btn-floater-dismiss:hover {
-  background: var(--off-white);
-  color: var(--banking-black);
-}
-
 /* ==================== PAGE HEADERS ==================== */
 .page-header {
   border-bottom: 2px solid var(--banking-black);
@@ -494,81 +459,130 @@ button:active {
 }
 
 .reservation-item {
-  background: var(--off-white);
+  background: white;
   border: 1px solid var(--border-color);
   border-left: 4px solid var(--banking-black);
-  padding: 1.5rem;
+  padding: 0;
   cursor: pointer;
   transition: all 0.2s;
-  display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  gap: 1rem;
+  display: grid;
+  grid-template-columns: 80px 1fr 50px;
+  gap: 0;
+  overflow: hidden;
+  position: relative;
+}
+
+.reservation-item:hover {
+  border-left-color: var(--sterling-accent);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.1);
 }
 
 .reservation-item:active {
   transform: scale(0.98);
 }
 
-@media (min-width: 768px) {
-  .reservation-item:hover {
-    border-left-color: var(--sterling-accent);
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  }
-}
-
-.res-info {
-  flex: 1;
-}
-
-.res-header {
+/* Date Block - Left Side */
+.res-date-block {
+  background: var(--off-white);
+  border-right: 1px solid var(--border-color);
   display: flex;
-  justify-content: space-between;
+  flex-direction: column;
   align-items: center;
-  margin-bottom: 0.5rem;
+  justify-content: center;
+  padding: 1rem 0.5rem;
+  text-align: center;
 }
 
-.res-date {
-  font-weight: 700;
-  font-size: 1rem;
-  margin: 0;
-  text-transform: uppercase;
-  letter-spacing: 0.02em;
+.res-month {
+  font-size: 0.7rem;
+  font-weight: 900;
+  letter-spacing: 0.1em;
+  color: var(--sterling-accent);
+  margin-bottom: 0.25rem;
+}
+
+.res-day {
+  font-size: 2rem;
+  font-weight: 900;
+  line-height: 1;
+  color: var(--banking-black);
+}
+
+/* Content - Middle */
+.res-content {
+  padding: 1.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.res-time-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.85rem;
+  font-weight: 600;
+  color: var(--banking-grey);
+}
+
+.res-time-row svg {
+  flex-shrink: 0;
 }
 
 .res-room {
-  font-size: 0.7rem;
-  color: var(--banking-grey);
-  font-weight: 700;
-  letter-spacing: 0.1em;
-  margin: 0 0 0.5rem 0;
+  font-size: 1rem;
+  font-weight: 900;
   text-transform: uppercase;
+  letter-spacing: 0.02em;
+  margin: 0;
+  color: var(--banking-black);
 }
 
 .res-notes {
-  color: var(--banking-grey);
   font-size: 0.85rem;
+  color: var(--banking-grey);
   font-style: italic;
   margin: 0;
+  line-height: 1.4;
 }
 
-.guest-count-badge {
+.res-guest-count {
   display: flex;
   align-items: center;
-  gap: 0.35rem;
-  background: var(--banking-black);
-  color: white;
-  padding: 0.35rem 0.65rem;
-  border-radius: 50px;
-  font-size: 0.7rem;
+  gap: 0.5rem;
+  font-size: 0.75rem;
   font-weight: 700;
-  flex-shrink: 0;
+  color: var(--banking-black);
+  padding-top: 0.5rem;
+  border-top: 1px solid var(--border-color);
 }
 
-.guest-count-badge svg {
+.res-guest-count svg {
   flex-shrink: 0;
+  opacity: 0.7;
 }
 
+/* Delete Button - Right Side */
+.btn-delete-icon {
+  background: transparent;
+  border: none;
+  color: var(--banking-grey);
+  padding: 0;
+  width: 50px;
+  height: 100%;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-left: 1px solid var(--border-color);
+}
+
+.btn-delete-icon:hover {
+  background: var(--sterling-accent);
+  color: white;
+  transform: none;
+}
 /* ==================== FORMS ==================== */
 .banking-form {
   max-width: 100%;
@@ -825,17 +839,19 @@ button:active {
   transform: none;
 }
 
-/* ==================== SAVE FLOATER ==================== */
+/* ==================== SAVE FLOATER (UPDATED) ==================== */
+/* ==================== SAVE FLOATER (UPDATED) ==================== */
 .save-floater {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: white;
-  border-top: 2px solid var(--banking-black);
-  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.1);
+  background: var(--success-green);
+  color: white;
+  box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
   z-index: 999;
   animation: slideUp 0.3s ease-out;
+  overflow: hidden;
 }
 
 @keyframes slideUp {
@@ -850,18 +866,131 @@ button:active {
 .save-floater-content {
   display: flex;
   align-items: center;
-  gap: 0.75rem;
+  justify-content: center;
+  gap: 1rem;
   padding: 1rem;
-  border-bottom: 1px solid var(--border-color);
-  color: var(--success-green);
-  font-weight: 600;
-  font-size: 0.85rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.save-icon {
+  flex-shrink: 0;
+  animation: checkPulse 0.5s ease-out;
+}
+
+@keyframes checkPulse {
+  0% {
+    transform: scale(0);
+  }
+  50% {
+    transform: scale(1.2);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+.save-title {
+  font-weight: 700;
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
 .save-floater-actions {
   display: grid;
   grid-template-columns: 1fr 1fr;
   gap: 0;
+}
+
+.btn-floater-home,
+.btn-floater-dismiss {
+  padding: 1rem;
+  border: none;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-floater-home {
+  background: rgba(0, 0, 0, 0.2);
+  color: white;
+  border-right: 1px solid rgba(255, 255, 255, 0.2);
+}
+
+.btn-floater-home:hover {
+  background: rgba(0, 0, 0, 0.4);
+  transform: none;
+}
+
+.btn-floater-dismiss {
+  background: transparent;
+  color: white;
+}
+
+.btn-floater-dismiss:hover {
+  background: rgba(255, 255, 255, 0.1);
+  transform: none;
+}
+
+.save-floater-progress {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  height: 3px;
+  background: rgba(255, 255, 255, 0.5);
+  animation: progressBar 5s linear;
+}
+
+@keyframes progressBar {
+  from {
+    width: 0%;
+  }
+  to {
+    width: 100%;
+  }
+}
+
+/* ==================== FEES SECTION ==================== */
+.fees-section {
+  margin-top: 2rem;
+  padding-top: 2rem;
+  border-top: 2px solid var(--border-color);
+}
+
+.fee-status {
+  padding: 0.25rem 0.5rem;
+  border-radius: 2px;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.fee-status.paid {
+  background: var(--success-green);
+  color: white;
+}
+
+.fee-status.pending {
+  background: var(--sterling-accent);
+  color: white;
+}
+
+.fee-total-row {
+  border-top: 2px solid var(--banking-black);
+  font-weight: 700;
+}
+
+.fee-total-row td {
+  padding-top: 1rem !important;
+  font-size: 1.1rem;
 }
 
 /* ==================== LOGIN PAGE ==================== */
@@ -1009,12 +1138,13 @@ button:active {
   margin-top: 4px;
 }
 
-.time-badge, .guest-count-badge {
+.time-badge,
+.guest-count-badge {
   display: inline-flex;
   align-items: center;
   gap: 4px;
   padding: 2px 8px;
-  border-radius: 2px; /* Sharp corners for a formal look */
+  border-radius: 2px;
   font-size: 0.75rem;
   font-weight: 600;
   text-transform: uppercase;
@@ -1022,41 +1152,39 @@ button:active {
   border: 1px solid currentColor;
 }
 
-/* Specific colors for the Time Slot */
 .time-badge {
   background-color: #f8f9fa;
-  color: #1a1a1a; /* Professional Onyx */
+  color: #1a1a1a;
   border-color: #dee2e6;
 }
 
-/* Specific colors for the Guest Count */
 .guest-count-badge {
   background-color: #e9ecef;
   color: #495057;
   border-color: #ced4da;
 }
 
-/* Icon alignment inside badges */
-.time-badge svg, .guest-count-badge svg {
+.time-badge svg,
+.guest-count-badge svg {
   opacity: 0.8;
 }
 
 /* Better Account Grid */
 .account-grid {
   display: grid;
-  grid-template-columns: repeat(2, 1fr); /* 2 per row makes them big and clickable */
-  gap: 16px; /* More breathing room */
+  grid-template-columns: repeat(2, 1fr);
+  gap: 16px;
   margin-bottom: 2rem;
 }
 
 .account-select-btn {
   display: flex;
-  flex-direction: row; /* Icon next to name for more width */
+  flex-direction: row;
   align-items: center;
   gap: 12px;
   padding: 16px;
   background: #ffffff;
-  border: 2px solid #f0f0f0; /* Thicker borders */
+  border: 2px solid #f0f0f0;
   border-radius: 4px;
   color: var(--acc-color);
   transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1105,5 +1233,219 @@ button:active {
 }
 
 .status-icon {
-  color: #2E4A62;
+  color: #2e4a62;
+}
+
+.divider {
+  text-align: center;
+  margin: 2rem 0;
+  position: relative;
+  color: var(--banking-grey);
+  font-size: 0.7rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+}
+
+.divider::before {
+  content: "";
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 1px;
+  background: var(--border-color);
+  z-index: -1;
+}
+
+.divider span {
+  background: white;
+  padding: 0 1rem;
+}
+
+.signup-link {
+  text-align: center;
+  font-size: 0.85rem;
+  color: var(--banking-grey);
+  margin: 0;
+}
+
+.login-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.login-icon-main {
+  margin-bottom: 1rem;
+  color: var(--banking-black);
+}
+
+.login-submit {
+  margin-top: 1rem;
+}
+
+/* ==================== RULES PAGE ==================== */
+.rules-intro {
+  background: var(--off-white);
+  border-left: 4px solid var(--sterling-accent);
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  font-size: 0.9rem;
+  color: var(--banking-grey);
+}
+
+.rules-grid {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+  margin-top: 2rem;
+}
+
+@media (min-width: 768px) {
+  .rules-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+
+.rule-card {
+  background: var(--off-white);
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--banking-black);
+  padding: 2rem;
+  display: flex;
+  gap: 1.5rem;
+  transition: all 0.2s;
+}
+
+.rule-card:hover {
+  border-left-color: var(--sterling-accent);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+.rule-icon {
+  flex-shrink: 0;
+  color: var(--banking-black);
+  opacity: 0.7;
+}
+
+.rule-content {
+  flex: 1;
+}
+
+.rule-content h3 {
+  margin: 0 0 0.75rem 0;
+  text-transform: uppercase;
+  font-size: 1rem;
+  letter-spacing: 0.02em;
+}
+
+.rule-desc {
+  color: var(--banking-grey);
+  font-size: 0.85rem;
+  margin: 0 0 1rem 0;
+  line-height: 1.5;
+}
+
+.rule-condition {
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+  margin-bottom: 1rem;
+  padding: 0.75rem;
+  background: white;
+  border: 1px solid var(--border-color);
+}
+
+.condition-label {
+  font-size: 0.65rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--banking-grey);
+  letter-spacing: 0.05em;
+}
+
+.condition-value {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--banking-black);
+}
+
+.rule-fee {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-top: 1rem;
+  border-top: 1px solid var(--border-color);
+}
+
+.fee-label {
+  font-size: 0.7rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  color: var(--banking-grey);
+  letter-spacing: 0.05em;
+}
+
+.fee-amount {
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: var(--sterling-accent);
+}
+
+/* ==================== NAV TOOLTIPS ==================== */
+.nav-link-with-tooltip {
+  position: relative;
+  color: var(--banking-grey);
+  text-decoration: none;
+  transition: color 0.2s;
+}
+
+.nav-link-with-tooltip:hover {
+  color: var(--banking-black);
+}
+
+.nav-link-with-tooltip.active {
+  color: var(--sterling-accent);
+}
+
+.nav-link-with-tooltip::after {
+  content: attr(data-tooltip);
+  position: absolute;
+  bottom: -35px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: var(--banking-black);
+  color: white;
+  padding: 0.35rem 0.75rem;
+  border-radius: 3px;
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.nav-link-with-tooltip:hover::after {
+  opacity: 1;
+}
+
+/* Arrow for tooltip */
+.nav-link-with-tooltip::before {
+  content: "";
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  border-left: 5px solid transparent;
+  border-right: 5px solid transparent;
+  border-bottom: 5px solid var(--banking-black);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.2s;
+}
+
+.nav-link-with-tooltip:hover::before {
+  opacity: 1;
 }

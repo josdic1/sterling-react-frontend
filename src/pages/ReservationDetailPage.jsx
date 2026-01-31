@@ -5,70 +5,103 @@ import { useToastTrigger } from "../hooks/useToast";
 import { AttendeeList } from "../components/attendees/AttendeeList";
 import { AttendeeForm } from "../components/attendees/AttendeeForm";
 import { SaveFloater } from "../components/shared/SaveFloater";
-import { Edit3, UserPlus, Clock } from "lucide-react";
+import { Edit3, UserPlus, Clock, DollarSign } from "lucide-react";
 
 export function ReservationDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
   const [needsFetch, setNeedsFetch] = useState(true);
   const [showSaveFloater, setShowSaveFloater] = useState(false);
-  
+  const [fees, setFees] = useState([]);
+  const [currentAttendees, setCurrentAttendees] = useState([]);
+
   const { addToast } = useToastTrigger();
-  
-  const { 
-    diningRooms, 
-    timeSlots,
-    reservations, 
+
+  const {
+    diningRooms,
+    reservations,
     members,
-    currentAttendees,
     loading,
-    fetchReservationById, 
+    fetchReservationById,
     fetchAttendees,
     addAttendee,
-    removeAttendee
+    removeAttendee,
   } = useData();
 
   const resId = parseInt(id);
-  const reservation = reservations?.find(r => r.id === resId);
+  const reservation = reservations?.find((r) => r.id === resId);
+
+  // Convert 24hr time to 12hr AM/PM format
+  const formatTime = (time24) => {
+    if (!time24) return "";
+    const [hours, minutes] = time24.split(':');
+    const hour = parseInt(hours);
+    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const hour12 = hour % 12 || 12;
+    return `${hour12}:${minutes} ${ampm}`;
+  };
 
   useEffect(() => {
     const sync = async () => {
       if (!resId) return;
-      
+
       if (reservation) {
-        await fetchAttendees(resId);
+        const attendees = await fetchAttendees(resId);
+        setCurrentAttendees(attendees || []);
         setNeedsFetch(false);
         return;
       }
-      
+
       const current = await fetchReservationById(resId);
       if (!current) {
         navigate("/", { replace: true });
         return;
       }
 
-      await fetchAttendees(resId);
+      const attendees = await fetchAttendees(resId);
+      setCurrentAttendees(attendees || []);
       setNeedsFetch(false);
     };
-    
+
     sync();
   }, [resId, reservation, fetchReservationById, fetchAttendees, navigate]);
 
-  const unseatedMembers = members.filter(
-    member => !currentAttendees.find(att => att.member_id === member.id)
-  );
+  // Fetch fees
+  useEffect(() => {
+    const loadFees = async () => {
+      const token = localStorage.getItem("token");
+      const resp = await fetch(
+        `http://localhost:8080/reservations/${resId}/fees`,
+        {
+          headers: { Authorization: `Bearer ${token}` },
+        },
+      );
+      if (resp.ok) {
+        setFees(await resp.json());
+      }
+    };
+
+    if (resId) loadFees();
+  }, [resId, currentAttendees]);
+
+  const unseatedMembers = members?.filter(
+    (member) => !currentAttendees.find((att) => att.member_id === member.id),
+  ) || [];
 
   const handleQuickAddMember = async (member) => {
     const result = await addAttendee(resId, {
       member_id: member.id,
       name: member.name,
       attendee_type: "member",
-      dietary_restrictions: member.dietary_restrictions
+      dietary_restrictions: member.dietary_restrictions,
     });
 
     if (result.success) {
       addToast(`${member.name} added to table`, "success");
       setShowSaveFloater(true);
+      // Refresh attendees
+      const attendees = await fetchAttendees(resId);
+      setCurrentAttendees(attendees || []);
     } else {
       addToast("Failed to add guest", "error");
     }
@@ -79,6 +112,9 @@ export function ReservationDetailPage() {
     if (result.success) {
       addToast(`${attendeeName} removed from table`, "success");
       setShowSaveFloater(true);
+      // Refresh attendees
+      const attendees = await fetchAttendees(resId);
+      setCurrentAttendees(attendees || []);
     } else {
       addToast("Failed to remove guest", "error");
     }
@@ -88,16 +124,23 @@ export function ReservationDetailPage() {
     return <div className="loading-state">VERIFYING LEDGER ENTRY...</div>;
   }
 
-  const room = diningRooms.find(r => r.id === reservation?.dining_room_id);
-  const slot = timeSlots.find(s => s.id === reservation?.time_slot_id);
+  if (!reservation) {
+    return <div className="loading-state">RESERVATION NOT FOUND</div>;
+  }
+
+  const room = diningRooms?.find((r) => r.id === reservation?.dining_room_id);
+  const totalFees = fees.reduce((sum, fee) => sum + fee.calculated_amount, 0);
 
   return (
     <div className="container">
-      <SaveFloater show={showSaveFloater} onDismiss={() => setShowSaveFloater(false)} />
+      <SaveFloater 
+        show={showSaveFloater} 
+        onDismiss={() => setShowSaveFloater(false)} 
+      />
 
       <header className="page-header">
         <h1>Ledger Entry #{resId}</h1>
-        <button 
+        <button
           onClick={() => navigate(`/reservations/${id}/edit`)}
           className="btn-edit"
           title="Edit"
@@ -110,7 +153,7 @@ export function ReservationDetailPage() {
       <div className="info-summary-card">
         <div className="text-small">Verified Location</div>
         <h2>{room ? room.name : "NO LOCATION ASSIGNED"}</h2>
-        
+
         <div className="details-grid">
           <div>
             <span className="text-small">Transaction Date</span>
@@ -119,12 +162,11 @@ export function ReservationDetailPage() {
           <div>
             <span className="text-small">Scheduled Window</span>
             <p className="font-bold">
-              {slot ? (
-                <>
-                  <Clock size={14} style={{ marginRight: '4px', verticalAlign: 'middle' }} />
-                  {slot.name} ({slot.start_time.slice(0, 5)} - {slot.end_time.slice(0, 5)})
-                </>
-              ) : "UNSCHEDULED"}
+              <Clock
+                size={14}
+                style={{ marginRight: "4px", verticalAlign: "middle" }}
+              />
+              {formatTime(reservation?.start_time)} - {formatTime(reservation?.end_time)}
             </p>
           </div>
           <div>
@@ -134,21 +176,62 @@ export function ReservationDetailPage() {
         </div>
       </div>
 
+      {fees.length > 0 && (
+        <div className="fees-section">
+          <h3 className="section-label">
+            <DollarSign
+              size={16}
+              style={{ verticalAlign: "middle", marginRight: "4px" }}
+            />
+            Applied Fees
+          </h3>
+          <table className="sterling-table">
+            <thead>
+              <tr>
+                <th>Fee</th>
+                <th>Amount</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              {fees.map((fee) => (
+                <tr key={fee.id}>
+                  <td className="font-bold">{fee.rule.name}</td>
+                  <td>${fee.calculated_amount.toFixed(2)}</td>
+                  <td>
+                    <span
+                      className={`fee-status ${fee.paid ? "paid" : "pending"}`}
+                    >
+                      {fee.paid ? "PAID" : "PENDING"}
+                    </span>
+                  </td>
+                </tr>
+              ))}
+              <tr className="fee-total-row">
+                <td className="font-bold">TOTAL</td>
+                <td className="font-bold">${totalFees.toFixed(2)}</td>
+                <td></td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+
       <div className="detail-layout">
         <div className="main-content">
-          <AttendeeList 
-            attendees={currentAttendees} 
+          <AttendeeList
+            attendees={currentAttendees}
             reservationId={resId}
             onRemove={handleRemoveAttendee}
           />
         </div>
-        
+
         <aside className="sidebar">
           {unseatedMembers.length > 0 && (
             <div className="sidebar-card">
               <h3 className="section-label">Quick Add Family</h3>
               <div className="quick-add-members">
-                {unseatedMembers.map(member => (
+                {unseatedMembers.map((member) => (
                   <button
                     key={member.id}
                     onClick={() => handleQuickAddMember(member)}
@@ -157,7 +240,9 @@ export function ReservationDetailPage() {
                     <UserPlus size={16} />
                     <span>{member.name}</span>
                     {member.relation && (
-                      <span className="member-relation">({member.relation})</span>
+                      <span className="member-relation">
+                        ({member.relation})
+                      </span>
                     )}
                   </button>
                 ))}
@@ -167,11 +252,14 @@ export function ReservationDetailPage() {
 
           <div className="sidebar-card">
             <h3 className="section-label">Add Guest</h3>
-            <AttendeeForm 
-              reservationId={resId} 
-              onSuccess={(name) => {
+            <AttendeeForm
+              reservationId={resId}
+              onSuccess={async (name) => {
                 addToast(`${name} added to table`, "success");
                 setShowSaveFloater(true);
+                // Refresh attendees
+                const attendees = await fetchAttendees(resId);
+                setCurrentAttendees(attendees || []);
               }}
             />
           </div>

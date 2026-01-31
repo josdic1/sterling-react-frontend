@@ -12,6 +12,7 @@ import { ReservationsPage } from "./pages/ReservationsPage.jsx";
 import { ReservationDetailPage } from "./pages/ReservationDetailPage.jsx";
 import { SegaWishList } from "./pages/SegaWishList.jsx";
 import { ReservationForm } from "./components/reservations/ReservationForm.jsx";
+import { RulesPage } from "./pages/RulesPage.jsx";
 
 export const routes = [
   {
@@ -30,6 +31,9 @@ export const routes = [
       { path: "members", element: <ProtectedRoutes><MembersPage /></ProtectedRoutes> },
       { path: "members/new", element: <ProtectedRoutes><MemberForm /></ProtectedRoutes> },
       { path: "members/:id/edit", element: <ProtectedRoutes><MemberForm /></ProtectedRoutes> },
+      
+      // Rules & Fees
+      { path: "rules", element: <ProtectedRoutes><RulesPage /></ProtectedRoutes> },
       
       // Infrastructure (Read-only)
       { path: "dining-rooms", element: <ProtectedRoutes><DiningRoomsPage /></ProtectedRoutes> },

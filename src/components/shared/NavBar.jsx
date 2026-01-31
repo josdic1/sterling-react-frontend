@@ -1,6 +1,6 @@
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
-import { Home, Calendar, Users, LogOut, UserCheck, ListChecks } from "lucide-react";
+import { Home, Calendar, Users, LogOut, UserCheck, FileText, ListTodo } from "lucide-react";
 
 export function NavBar() {
   const { user, logout, loggedIn } = useAuth();
@@ -21,17 +21,40 @@ export function NavBar() {
 
       {/* 2. CENTER: LINKS (Always Child 2) */}
       <div className="nav-links" style={{ display: 'flex', gap: '2rem', justifyContent: 'center' }}>
-        <Link to="/" title="Home" className={location.pathname === "/" ? "active" : ""}>
+        <Link 
+          to="/" 
+          className={`nav-link-with-tooltip ${location.pathname === "/" ? "active" : ""}`}
+          data-tooltip="Home"
+        >
           <Home size={20} />
         </Link>
-        <Link to="/reservations" title="Reservations" className={location.pathname === "/reservations" ? "active" : ""}>
+        <Link 
+          to="/reservations/new" 
+          className={`nav-link-with-tooltip ${location.pathname === "/reservations/new" ? "active" : ""}`}
+          data-tooltip="New Reservation"
+        >
           <Calendar size={20} />
         </Link>
-        <Link to="/members" title="Family" className={location.pathname === "/members" ? "active" : ""}>
+        <Link 
+          to="/members" 
+          className={`nav-link-with-tooltip ${location.pathname === "/members" ? "active" : ""}`}
+          data-tooltip="Family"
+        >
           <Users size={20} />
         </Link>
-        <Link to="/wishlist" title="Backlog" className={location.pathname === "/wishlist" ? "active" : ""}>
-          <ListChecks size={20} />
+        <Link 
+          to="/rules" 
+          className={`nav-link-with-tooltip ${location.pathname === "/rules" ? "active" : ""}`}
+          data-tooltip="Rules & Fees"
+        >
+          <FileText size={20} />
+        </Link>
+        <Link 
+          to="/wishlist" 
+          className={`nav-link-with-tooltip ${location.pathname === "/wishlist" ? "active" : ""}`}
+          data-tooltip="Wishlist"
+        >
+          <ListTodo size={20} />
         </Link>
       </div>
 
@@ -54,7 +77,6 @@ export function NavBar() {
             </button>
           </div>
         ) : (
-          /* Using nav-brand style for login to keep font consistency */
           <Link to="/login" className="nav-brand" style={{ border: '1px solid #121212', padding: '4px 12px', fontSize: '0.7rem' }}>
             LOGIN
           </Link>

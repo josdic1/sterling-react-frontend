@@ -1,4 +1,3 @@
-// src/components/reservations/ReservationForm.jsx
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useData } from "../../hooks/useData";
@@ -9,7 +8,6 @@ export function ReservationForm() {
   
   const { 
     diningRooms, 
-    timeSlots,
     reservations, 
     loading,
     fetchReservationById, 
@@ -20,12 +18,24 @@ export function ReservationForm() {
   const [isFetching, setIsFetching] = useState(!!id);
   const [formData, setFormData] = useState({
     date: "",
+    meal_type: "",
     dining_room_id: "",
-    time_slot_id: "",  // ADD THIS
+    start_time: "",
+    end_time: "",
     notes: "",
   });
 
   const resId = id ? parseInt(id) : null;
+
+  // Helper: Convert time object to HH:MM string
+  const formatTimeForInput = (timeValue) => {
+    if (!timeValue) return "";
+    if (typeof timeValue === 'string') {
+      // Already a string, just take HH:MM part
+      return timeValue.split(':').slice(0, 2).join(':');
+    }
+    return timeValue;
+  };
 
   useEffect(() => {
     const init = async () => {
@@ -39,8 +49,10 @@ export function ReservationForm() {
       if (target) {
         setFormData({
           date: target.date || "",
+          meal_type: target.meal_type || "",
           dining_room_id: String(target.dining_room_id || ""),
-          time_slot_id: String(target.time_slot_id || ""),  // ADD THIS
+          start_time: formatTimeForInput(target.start_time),  // FORMAT HERE
+          end_time: formatTimeForInput(target.end_time),      // FORMAT HERE
           notes: target.notes || "",
         });
       } else {
@@ -57,8 +69,7 @@ export function ReservationForm() {
     
     const submissionData = {
       ...formData,
-      dining_room_id: parseInt(formData.dining_room_id),
-      time_slot_id: parseInt(formData.time_slot_id)  // ADD THIS
+      dining_room_id: parseInt(formData.dining_room_id)
     };
 
     try {
@@ -72,6 +83,53 @@ export function ReservationForm() {
     } catch (err) {
       console.error("Save failed", err);
       alert("Could not save reservation. Check console for details.");
+    }
+  };
+
+  // Generate time options based on meal type
+  const generateTimeOptions = (mealType) => {
+    if (!mealType) return [];
+    
+    const options = [];
+    let startHour, endHour;
+    
+    if (mealType === "lunch") {
+      startHour = 11;
+      endHour = 14; // 2 PM
+    } else {
+      startHour = 16; // 4 PM
+      endHour = 19; // 7 PM
+    }
+    
+    for (let h = startHour; h <= endHour; h++) {
+      for (let m of [0, 15, 30, 45]) {
+        const hour12 = h % 12 || 12;
+        const ampm = h >= 12 ? 'PM' : 'AM';
+        const display = `${hour12}:${String(m).padStart(2, '0')} ${ampm}`;
+        const value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
+        options.push({ display, value });
+      }
+    }
+    
+    return options;
+  };
+
+  const timeOptions = generateTimeOptions(formData.meal_type);
+
+  const handleMealTypeChange = (newMealType) => {
+    // Only clear times if switching meal types, not on initial load
+    if (formData.meal_type && formData.meal_type !== newMealType) {
+      setFormData({
+        ...formData,
+        meal_type: newMealType,
+        start_time: "",
+        end_time: ""
+      });
+    } else {
+      setFormData({
+        ...formData,
+        meal_type: newMealType
+      });
     }
   };
 
@@ -97,6 +155,19 @@ export function ReservationForm() {
         </div>
 
         <div className="input-group">
+          <label>Meal Type</label>
+          <select
+            value={formData.meal_type}
+            onChange={e => handleMealTypeChange(e.target.value)}
+            required
+          >
+            <option value="">Select Meal...</option>
+            <option value="lunch">LUNCH (11 AM - 2 PM)</option>
+            <option value="dinner">DINNER (4 PM - 7 PM)</option>
+          </select>
+        </div>
+
+        <div className="input-group">
           <label>Location</label>
           <select
             value={formData.dining_room_id}
@@ -113,16 +184,34 @@ export function ReservationForm() {
         </div>
 
         <div className="input-group">
-          <label>Time Slot</label>
+          <label>Start Time</label>
           <select
-            value={formData.time_slot_id}
-            onChange={e => setFormData({...formData, time_slot_id: e.target.value})}
+            value={formData.start_time}
+            onChange={e => setFormData({...formData, start_time: e.target.value})}
             required
+            disabled={!formData.meal_type}
           >
-            <option value="">Select Time...</option>
-            {timeSlots.map(slot => (
-              <option key={slot.id} value={String(slot.id)}>
-                {slot.name} ({slot.start_time} - {slot.end_time})
+            <option value="">Select Start Time...</option>
+            {timeOptions.map(time => (
+              <option key={`start-${time.value}`} value={time.value}>
+                {time.display}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="input-group">
+          <label>End Time</label>
+          <select
+            value={formData.end_time}
+            onChange={e => setFormData({...formData, end_time: e.target.value})}
+            required
+            disabled={!formData.meal_type}
+          >
+            <option value="">Select End Time...</option>
+            {timeOptions.map(time => (
+              <option key={`end-${time.value}`} value={time.value}>
+                {time.display}
               </option>
             ))}
           </select>
