@@ -2,8 +2,8 @@ import { useState, useEffect } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
 const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
-
-export function AuthProvider({ children }) {
+// dummy rebuild
+export function AuthProvider({ children }){
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -34,7 +34,7 @@ export function AuthProvider({ children }) {
 
     checkSession();
   }, []);
-  // force rebuild 1.
+  
   const login = async (credentials) => {
     try {
       const resp = await fetch(`${API_URL}/users/login`, {
