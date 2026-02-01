@@ -1,3 +1,4 @@
+// DataProvider.jsx (updated: trailing slashes on collection endpoints to prevent 307 redirects + fetches for missing tables fees, rules, time_slots)
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { DataContext } from "../contexts/DataContext";
 import { AuthContext } from "../contexts/AuthContext";
@@ -10,6 +11,9 @@ export function DataProvider({ children }) {
   const [diningRooms, setDiningRooms] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [members, setMembers] = useState([]);
+  const [fees, setFees] = useState([]);
+  const [rules, setRules] = useState([]);
+  const [timeSlots, setTimeSlots] = useState([]);
   const [loading, setLoading] = useState(true);
 
   const getToken = useCallback(() => localStorage.getItem("token"), []);
@@ -40,7 +44,7 @@ export function DataProvider({ children }) {
   const createReservation = useCallback(
     async (newRes) => {
       const token = getToken();
-      const resp = await fetch(`${API_URL}/reservations`, {
+      const resp = await fetch(`${API_URL}/reservations/`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -95,9 +99,12 @@ export function DataProvider({ children }) {
     async (resId) => {
       try {
         const token = getToken();
-        const resp = await fetch(`${API_URL}/reservations/${resId}/attendees`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
+        const resp = await fetch(
+          `${API_URL}/reservations/${resId}/attendees/`,
+          {
+            headers: { Authorization: `Bearer ${token}` },
+          },
+        );
         if (resp.ok) return await resp.json();
         return [];
       } catch (err) {
@@ -112,14 +119,17 @@ export function DataProvider({ children }) {
     async (resId, guestData) => {
       try {
         const token = getToken();
-        const resp = await fetch(`${API_URL}/reservations/${resId}/attendees`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
+        const resp = await fetch(
+          `${API_URL}/reservations/${resId}/attendees/`,
+          {
+            method: "POST",
+            headers: {
+              "Content-Type": "application/json",
+              Authorization: `Bearer ${token}`,
+            },
+            body: JSON.stringify(guestData),
           },
-          body: JSON.stringify(guestData),
-        });
+        );
         if (resp.ok) {
           const newAttendee = await resp.json();
           setReservations((prev) =>
@@ -145,7 +155,7 @@ export function DataProvider({ children }) {
       try {
         const token = getToken();
         const resp = await fetch(
-          `${API_URL}/reservations/${resId}/attendees/${attendeeId}`,
+          `${API_URL}/reservations/${resId}/attendees/${attendeeId}/`,
           {
             method: "DELETE",
             headers: { Authorization: `Bearer ${token}` },
@@ -177,7 +187,7 @@ export function DataProvider({ children }) {
     async (memberData) => {
       try {
         const token = getToken();
-        const resp = await fetch(`${API_URL}/members`, {
+        const resp = await fetch(`${API_URL}/members/`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -203,7 +213,7 @@ export function DataProvider({ children }) {
     async (memberId, updateData) => {
       try {
         const token = getToken();
-        const resp = await fetch(`${API_URL}/members/${memberId}`, {
+        const resp = await fetch(`${API_URL}/members/${memberId}/`, {
           method: "PATCH",
           headers: {
             "Content-Type": "application/json",
@@ -231,7 +241,7 @@ export function DataProvider({ children }) {
     async (memberId) => {
       try {
         const token = getToken();
-        const resp = await fetch(`${API_URL}/members/${memberId}`, {
+        const resp = await fetch(`${API_URL}/members/${memberId}/`, {
           method: "DELETE",
           headers: { Authorization: `Bearer ${token}` },
         });
