@@ -7,6 +7,8 @@ import { AttendeeForm } from "../components/attendees/AttendeeForm";
 import { SaveFloater } from "../components/shared/SaveFloater";
 import { Edit3, UserPlus, Clock, DollarSign } from "lucide-react";
 
+const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
+
 export function ReservationDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -34,9 +36,9 @@ export function ReservationDetailPage() {
   // Convert 24hr time to 12hr AM/PM format
   const formatTime = (time24) => {
     if (!time24) return "";
-    const [hours, minutes] = time24.split(':');
+    const [hours, minutes] = time24.split(":");
     const hour = parseInt(hours);
-    const ampm = hour >= 12 ? 'PM' : 'AM';
+    const ampm = hour >= 12 ? "PM" : "AM";
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
   };
@@ -70,12 +72,9 @@ export function ReservationDetailPage() {
   useEffect(() => {
     const loadFees = async () => {
       const token = localStorage.getItem("token");
-      const resp = await fetch(
-        `http://localhost:8080/reservations/${resId}/fees`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        },
-      );
+      const resp = await fetch(`${API_URL}/reservations/${resId}/fees`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
       if (resp.ok) {
         setFees(await resp.json());
       }
@@ -84,9 +83,10 @@ export function ReservationDetailPage() {
     if (resId) loadFees();
   }, [resId, currentAttendees]);
 
-  const unseatedMembers = members?.filter(
-    (member) => !currentAttendees.find((att) => att.member_id === member.id),
-  ) || [];
+  const unseatedMembers =
+    members?.filter(
+      (member) => !currentAttendees.find((att) => att.member_id === member.id),
+    ) || [];
 
   const handleQuickAddMember = async (member) => {
     const result = await addAttendee(resId, {
@@ -133,9 +133,9 @@ export function ReservationDetailPage() {
 
   return (
     <div className="container">
-      <SaveFloater 
-        show={showSaveFloater} 
-        onDismiss={() => setShowSaveFloater(false)} 
+      <SaveFloater
+        show={showSaveFloater}
+        onDismiss={() => setShowSaveFloater(false)}
       />
 
       <header className="page-header">
@@ -166,7 +166,8 @@ export function ReservationDetailPage() {
                 size={14}
                 style={{ marginRight: "4px", verticalAlign: "middle" }}
               />
-              {formatTime(reservation?.start_time)} - {formatTime(reservation?.end_time)}
+              {formatTime(reservation?.start_time)} -{" "}
+              {formatTime(reservation?.end_time)}
             </p>
           </div>
           <div>
