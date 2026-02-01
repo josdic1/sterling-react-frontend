@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from "react";
 import { DataContext } from "../contexts/DataContext";
 import { AuthContext } from "../contexts/AuthContext";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:8080";
+const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
 
 export function DataProvider({ children }) {
   const { loggedIn } = useContext(AuthContext);
@@ -173,80 +173,80 @@ export function DataProvider({ children }) {
     [getToken],
   );
 
-const createMember = useCallback(
-  async (memberData) => {
-    try {
-      const token = getToken();
-      const resp = await fetch(`${API_URL}/members`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(memberData),
-      });
-      if (resp.ok) {
-        const newMember = await resp.json();
-        setMembers((prev) => [...prev, newMember]);
-        return { success: true, data: newMember };
+  const createMember = useCallback(
+    async (memberData) => {
+      try {
+        const token = getToken();
+        const resp = await fetch(`${API_URL}/members`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(memberData),
+        });
+        if (resp.ok) {
+          const newMember = await resp.json();
+          setMembers((prev) => [...prev, newMember]);
+          return { success: true, data: newMember };
+        }
+        return { success: false };
+      } catch (err) {
+        console.error(err);
+        return { success: false };
       }
-      return { success: false };
-    } catch (err) {
-      console.error(err);
-      return { success: false };
-    }
-  },
-  [getToken],
-);
+    },
+    [getToken],
+  );
 
-const updateMember = useCallback(
-  async (memberId, updateData) => {
-    try {
-      const token = getToken();
-      const resp = await fetch(`${API_URL}/members/${memberId}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updateData),
-      });
-      if (resp.ok) {
-        const updatedMember = await resp.json();
-        setMembers((prev) =>
-          prev.map((m) => (m.id === memberId ? updatedMember : m)),
-        );
-        return { success: true, data: updatedMember };
+  const updateMember = useCallback(
+    async (memberId, updateData) => {
+      try {
+        const token = getToken();
+        const resp = await fetch(`${API_URL}/members/${memberId}`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(updateData),
+        });
+        if (resp.ok) {
+          const updatedMember = await resp.json();
+          setMembers((prev) =>
+            prev.map((m) => (m.id === memberId ? updatedMember : m)),
+          );
+          return { success: true, data: updatedMember };
+        }
+        return { success: false };
+      } catch (err) {
+        console.error(err);
+        return { success: false };
       }
-      return { success: false };
-    } catch (err) {
-      console.error(err);
-      return { success: false };
-    }
-  },
-  [getToken],
-);
+    },
+    [getToken],
+  );
 
-const deleteMember = useCallback(
-  async (memberId) => {
-    try {
-      const token = getToken();
-      const resp = await fetch(`${API_URL}/members/${memberId}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (resp.ok) {
-        setMembers((prev) => prev.filter((m) => m.id !== memberId));
-        return { success: true };
+  const deleteMember = useCallback(
+    async (memberId) => {
+      try {
+        const token = getToken();
+        const resp = await fetch(`${API_URL}/members/${memberId}`, {
+          method: "DELETE",
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        if (resp.ok) {
+          setMembers((prev) => prev.filter((m) => m.id !== memberId));
+          return { success: true };
+        }
+        return { success: false };
+      } catch (err) {
+        console.error(err);
+        return { success: false };
       }
-      return { success: false };
-    } catch (err) {
-      console.error(err);
-      return { success: false };
-    }
-  },
-  [getToken],
-);
+    },
+    [getToken],
+  );
 
   useEffect(() => {
     const loadAll = async () => {
