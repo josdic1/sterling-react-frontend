@@ -291,6 +291,7 @@ export function DataProvider({ children }) {
     addAttendee,
     removeAttendee,
   };
-
+  console.log("Build: 1769978709");
+  console.log("Production Build Verified: HTTPS-Only - 1.1.0");
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

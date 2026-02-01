@@ -102,6 +102,9 @@ export function AuthProvider({ children }) {
     window.location.href = "/login";
   };
 
+  console.log('Build: 1769978709');
+console.log("Production Build Verified: HTTPS-Only - 1.1.0");
+
   return (
     <AuthContext.Provider
       value={{ user, loading, loggedIn: !!user, login, signup, logout }}

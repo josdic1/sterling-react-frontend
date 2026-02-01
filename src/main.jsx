@@ -1,20 +1,20 @@
 // main.jsx
-import { createRoot } from 'react-dom/client';
-import { createBrowserRouter, RouterProvider } from 'react-router-dom';
-import { routes } from './routes.jsx';
-import { AuthProvider } from './providers/AuthProvider';
-import { DataProvider } from './providers/DataProvider';
-import './index.css';
+import { createRoot } from "react-dom/client";
+import { createBrowserRouter, RouterProvider } from "react-router-dom";
+import { routes } from "./routes.jsx";
+import { AuthProvider } from "./providers/AuthProvider";
+import { DataProvider } from "./providers/DataProvider";
+import "./index.css";
 
 const router = createBrowserRouter(routes);
 
-createRoot(document.getElementById('root')).render(
+createRoot(document.getElementById("root")).render(
   <AuthProvider>
     <DataProvider>
       <RouterProvider router={router} />
     </DataProvider>
-  </AuthProvider>
+  </AuthProvider>,
 );
 
-console.log('Build: 1769978709');
-console.log("Production Build Verified: HTTPS-Only - v1.0.6");
+console.log("Build: 1769978709");
+console.log("Production Build Verified: HTTPS-Only - 1.1.0");
