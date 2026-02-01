@@ -1,8 +1,10 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
+console.log("Build version: 1.0.1 - Checking HTTPS");
 const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
-// dummy rebuild
+
+
 export function AuthProvider({ children }){
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
