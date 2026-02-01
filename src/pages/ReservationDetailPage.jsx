@@ -7,7 +7,6 @@ import { AttendeeForm } from "../components/attendees/AttendeeForm";
 import { SaveFloater } from "../components/shared/SaveFloater";
 import { Edit3, UserPlus, Clock, DollarSign } from "lucide-react";
 
-console.log("Build version: 1.0.1 - Checking HTTPS");
 const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
 
 export function ReservationDetailPage() {
