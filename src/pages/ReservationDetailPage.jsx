@@ -1,3 +1,4 @@
+// src/pages/ReservationDetailPage.jsx (FIXED: Added trailing slash to fees fetch)
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useData } from "../hooks/useData";
@@ -72,7 +73,8 @@ export function ReservationDetailPage() {
   useEffect(() => {
     const loadFees = async () => {
       const token = localStorage.getItem("token");
-      const resp = await fetch(`${API_URL}/reservations/${resId}/fees`, {
+      // FIXED: Added trailing slash to prevent 307 redirect
+      const resp = await fetch(`${API_URL}/reservations/${resId}/fees/`, {
         headers: { Authorization: `Bearer ${token}` },
       });
       if (resp.ok) {
