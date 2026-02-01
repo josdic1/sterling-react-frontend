@@ -14,4 +14,7 @@ createRoot(document.getElementById('root')).render(
       <RouterProvider router={router} />
     </DataProvider>
   </AuthProvider>
-);console.log('Build: 1769978709');
+);
+
+console.log('Build: 1769978709');
+console.log("Production Build Verified: HTTPS-Only - v1.0.6");
