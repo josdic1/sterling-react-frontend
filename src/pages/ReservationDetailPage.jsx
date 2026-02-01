@@ -1,4 +1,4 @@
-// src/pages/ReservationDetailPage.jsx (FIXED: Added trailing slash to fees fetch)
+// src/pages/ReservationDetailPage.jsx
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useData } from "../hooks/useData";
