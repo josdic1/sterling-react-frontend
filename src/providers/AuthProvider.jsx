@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
-const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
+const API_URL = import.meta.env.VITE_API_URL || "https://sterling-fastapi-backend-production.up.railway.app";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
@@ -59,21 +59,37 @@ export function AuthProvider({ children }) {
 
   const signup = async (userData) => {
     try {
-      // FIXED: URL changed from /users/signup to /users/
       const resp = await fetch(`${API_URL}/users/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData),
       });
 
-      if (resp.ok) {
-        const data = await resp.json();
-        // Backend /users/ returns the user object directly, not a token.
-        // You may need to log the user in immediately after signup.
+      if (!resp.ok) {
+        return {
+          success: false,
+          error: (await resp.text()) || "Signup failed",
+        };
+      }
+
+      // Option A: auto-login right after signup (recommended)
+      const loginResp = await fetch(`${API_URL}/users/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          email: userData.email,
+          password: userData.password,
+        }),
+      });
+
+      if (loginResp.ok) {
+        const data = await loginResp.json();
+        localStorage.setItem("token", data.access_token);
+        setUser(data.user);
         return { success: true };
       }
 
-      return { success: false, error: "Signup failed" };
+      return { success: true }; // at least account created
     } catch (err) {
       console.error("Signup failed", err);
       return { success: false, error: "Connection failed" };
