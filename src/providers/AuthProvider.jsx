@@ -60,7 +60,7 @@ export function AuthProvider({ children }) {
 
   const signup = async (userData) => {
     try {
-      const resp = await fetch(`${API_URL}/users/signup`, {
+      const resp = await fetch(`${API_URL}/users/`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(userData)
