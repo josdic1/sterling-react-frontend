@@ -1,4 +1,4 @@
-// DataProvider.jsx (updated: trailing slashes on collection endpoints to prevent 307 redirects + fetches for missing tables fees, rules, time_slots)
+// DataProvider.jsx (FIXED: Added trailing slashes to loadAll fetches)
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { DataContext } from "../contexts/DataContext";
 import { AuthContext } from "../contexts/AuthContext";
@@ -268,10 +268,11 @@ export function DataProvider({ children }) {
       setLoading(true);
       try {
         const headers = { Authorization: `Bearer ${token}` };
+        // FIXED: Added trailing slashes here to match backend expectations and avoid 307 redirects
         const [roomsRes, reservationsRes, membersRes] = await Promise.all([
-          fetch(`${API_URL}/dining-rooms`, { headers }),
-          fetch(`${API_URL}/reservations`, { headers }),
-          fetch(`${API_URL}/members`, { headers }),
+          fetch(`${API_URL}/dining-rooms/`, { headers }),
+          fetch(`${API_URL}/reservations/`, { headers }),
+          fetch(`${API_URL}/members/`, { headers }),
         ]);
         if (roomsRes.ok) setDiningRooms(await roomsRes.json());
         if (reservationsRes.ok) setReservations(await reservationsRes.json());
@@ -301,7 +302,7 @@ export function DataProvider({ children }) {
     addAttendee,
     removeAttendee,
   };
-  console.log("Build: 1769978709");
+  console.log("Build: 1769978710 - Fixed Trailing Slashes");
   console.log("Production Build Verified: HTTPS-Only - 1.1.0");
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }
