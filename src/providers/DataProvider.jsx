@@ -2,8 +2,6 @@ import React, { useState, useEffect, useContext, useCallback } from "react";
 import { DataContext } from "../contexts/DataContext";
 import { AuthContext } from "../contexts/AuthContext";
 
-
-console.log("Production Build Verified: HTTPS-Only - v1.0.9");
 const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
 
 export function DataProvider({ children }) {

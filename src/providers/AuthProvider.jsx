@@ -1,11 +1,9 @@
 import { useState, useEffect } from "react";
 import { AuthContext } from "../contexts/AuthContext";
 
-console.log("Production Build Verified: HTTPS-Only - v1.0.9");
 const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
 
-
-export function AuthProvider({ children }){
+export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
 
@@ -36,7 +34,7 @@ export function AuthProvider({ children }){
 
     checkSession();
   }, []);
-  
+
   const login = async (credentials) => {
     try {
       const resp = await fetch(`${API_URL}/users/login`, {
