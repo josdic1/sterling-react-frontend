@@ -1,4 +1,4 @@
-// src/pages/RulesPage.jsx
+// src/pages/RulesPage.jsx (Fixed: Added trailing slash to fetch)
 import { useEffect, useState } from "react";
 import { DollarSign, Users, Calendar, AlertCircle } from "lucide-react";
 
@@ -9,7 +9,8 @@ export function RulesPage() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    fetch(`${API_URL}/rules`)
+    // FIXED: Added '/' at the end to prevent 307 Redirect to HTTP
+    fetch(`${API_URL}/rules/`)
       .then((res) => res.json())
       .then((data) => {
         setRules(data);
