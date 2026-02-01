@@ -2,7 +2,7 @@ import React, { useState, useEffect, useContext, useCallback } from "react";
 import { DataContext } from "../contexts/DataContext";
 import { AuthContext } from "../contexts/AuthContext";
 
-const API_URL = import.meta.env.VITE_API_URL || "https://sterling-fastapi-backend-production.up.railway.app";
+const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
 
 export function DataProvider({ children }) {
   const { loggedIn } = useContext(AuthContext);
