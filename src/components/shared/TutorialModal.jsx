@@ -1,6 +1,6 @@
-// src/components/shared/TutorialModal.jsx - COMPLETE FIXED VERSION
+// src/components/shared/TutorialModal.jsx - FINAL VERSION WITH SELF + GUEST ACCESS
 import { useState, useEffect } from "react";
-import { X, ChevronRight, ChevronLeft, Check } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, Check, AlertCircle } from "lucide-react";
 
 const tutorialSteps = [
   {
@@ -38,10 +38,52 @@ const tutorialSteps = [
   },
   {
     id: 2,
+    emoji: "⚠️",
+    title: "IMPORTANT: Add Yourself First!",
+    description:
+      'Before making your first reservation, you MUST add yourself as a family member with relationship "SELF".',
+    section: {
+      title: "Why This Matters",
+      items: [
+        "The system automatically adds you to your own reservations",
+        "You cannot be added as a guest if you're not in the family list",
+        "Your account (login) and family member record are separate",
+        "This lets the system track your guest allowance and dietary needs",
+      ],
+    },
+    visual: {
+      title: "STEP-BY-STEP: Add Yourself",
+      items: [
+        {
+          color: "grey",
+          label: "1. Click USERS Icon (👥)",
+          desc: "Go to the Family page in the top navigation",
+        },
+        {
+          color: "red",
+          label: '2. Click "+ Add Member"',
+          desc: "Opens the family member form",
+        },
+        {
+          color: "grey",
+          label: "3. Enter Your Name",
+          desc: "Use your actual name (matches your account)",
+        },
+        {
+          color: "red",
+          label: '4. Relationship = "SELF"',
+          desc: 'CRITICAL: Type exactly "SELF" or "Self" (not "Me" or "Owner")',
+        },
+      ],
+    },
+    tip: "⚠️ IMPORTANT: Do this NOW before making any reservations! Without a SELF member record, the system cannot add you as an attendee.",
+  },
+  {
+    id: 3,
     emoji: "📅",
     title: "Making a Reservation",
     description:
-      "Click the CALENDAR icon (📅) in the top navigation, or use the floating RED + button on mobile.",
+      "After adding yourself as SELF, you can create reservations. Click the CALENDAR icon (📅) in navigation.",
     section: {
       title: "Booking Process",
       items: [
@@ -50,46 +92,66 @@ const tutorialSteps = [
         "3. Pick your preferred dining room",
         "4. Select start and end times",
         "5. Add optional notes for special requests",
-        "6. Click SAVE to confirm your booking",
+        "6. Click SAVE - You will be automatically added as the first attendee",
       ],
     },
-  },
-  {
-    id: 3,
-    emoji: "👨‍👩‍👧‍👦",
-    title: "Managing Your Family",
-    description:
-      "Add family members to quickly include them in reservations. Click the USERS icon (👥) in navigation.",
-    section: {
-      title: "Family Management",
-      items: [
-        'Click "+ Add Member" to create new family records',
-        'Enter name, relationship (e.g., "Son", "Daughter")',
-        'Add dietary restrictions (e.g., "Vegetarian", "Nut Allergy")',
-        "Family members appear as quick-add buttons when making reservations",
-        "Edit or archive members anytime from the Family page",
-      ],
-    },
+    tip: "💡 After creating a reservation, you can add more guests from the detail page!",
   },
   {
     id: 4,
-    emoji: "💰",
-    title: "Understanding Fees",
+    emoji: "👨‍👩‍👧‍👦",
+    title: "Managing Your Family",
     description:
-      "Some reservations automatically apply fees based on club rules. Click RULES icon (📋) to see all policies.",
+      "Add family members to quickly include them in reservations. Each member can have dietary restrictions.",
     section: {
-      title: "Common Automatic Fees",
+      title: "Family Management",
       items: [
-        "Peak Hours: Friday-Sunday reservations may have surcharges",
-        "Large Party: Groups over 8 guests may incur additional fees",
-        "Excess Guests: Beyond your member guest allowance",
-        "All fees are calculated and shown BEFORE you confirm",
-        "Fees appear on the reservation detail page",
+        "SELF: Add yourself first (as explained in Step 2)",
+        'Spouse/Partner: Add with relationship "Spouse" or "Partner"',
+        'Children: Add with "Son", "Daughter", "Child"',
+        'Extended Family: "Mother", "Father", "Sibling", etc.',
+        "Each member tracks their own dietary restrictions",
+        "Set guest allowance (how many non-family guests they can bring)",
       ],
     },
   },
   {
     id: 5,
+    emoji: "🤝",
+    title: "Shared Reservations (Coming Soon)",
+    description:
+      "Currently, only the account holder who created a reservation can view and modify it.",
+    section: {
+      title: "Current Limitations",
+      items: [
+        "❌ Family members with their own accounts cannot see shared bookings",
+        "❌ If Dad creates a reservation, Mom cannot edit it (even if she has an account)",
+        "❌ Each account only sees reservations they personally created",
+        "✅ WORKAROUND: Share one account login among family members",
+        "✅ OR: One person manages all reservations for the household",
+      ],
+    },
+    tip: "💡 FUTURE FEATURE: Cross-account reservation sharing is planned! This will let family members with separate accounts view and edit shared bookings.",
+  },
+  {
+    id: 6,
+    emoji: "💰",
+    title: "Understanding Fees",
+    description:
+      "Some reservations automatically apply fees based on club rules. All fees are shown before you confirm.",
+    section: {
+      title: "Common Automatic Fees",
+      items: [
+        "Peak Hours: Friday-Sunday reservations may have surcharges",
+        "Large Party: Groups over 8 guests may incur additional fees",
+        "Excess Guests: Beyond member guest allowances",
+        "Example: If you have 2 guest allowance but bring 4 non-family guests, you pay for 2 extras",
+        "All fees calculated automatically and shown on detail page",
+      ],
+    },
+  },
+  {
+    id: 7,
     emoji: "📋",
     title: "Reading Reservation Cards",
     description:
@@ -110,32 +172,33 @@ const tutorialSteps = [
         {
           color: "red",
           label: "RIGHT: Delete Icon",
-          desc: "Trash can button - turns red on hover to confirm deletion",
+          desc: "Trash can button - turns red on hover to cancel entire reservation",
         },
       ],
     },
     tip: "💡 Click anywhere on a card to see full details and manage guests!",
   },
   {
-    id: 6,
+    id: 8,
     emoji: "🔍",
-    title: "Reservation Detail Page",
+    title: "Managing Guests",
     description:
-      "Click any card to open the detail view where you can edit and manage guests.",
+      "Click any reservation card to open the detail view where you can add/remove guests.",
     section: {
       title: "Available Actions",
       items: [
         "EDIT (pencil icon) - Modify date, time, room, or notes",
         "View current guest list with dietary restrictions",
-        "QUICK-ADD buttons for your family members",
+        "QUICK-ADD buttons for your family members (appears on right sidebar)",
         "Manual ADD GUEST form for non-family attendees",
-        "Applied fees section showing all charges",
-        "DELETE button (trash icon) to cancel entire reservation",
+        "REMOVE button next to each guest to remove them from table",
+        "Applied fees section showing all charges and totals",
       ],
     },
+    tip: "⚠️ Remember: You can only edit reservations YOU created. Family members with separate accounts cannot edit your bookings.",
   },
   {
-    id: 7,
+    id: 9,
     emoji: "💁",
     title: "Navigation & Help",
     description:
@@ -143,14 +206,15 @@ const tutorialSteps = [
     section: {
       title: "Top Navigation Icons (Left to Right)",
       items: [
-        "🏠 HOME - Dashboard with all your reservations",
+        "🏠 HOME - Dashboard with all YOUR reservations (only ones you created)",
         "📅 CALENDAR - Create new reservation",
-        "👥 USERS - Manage family members",
+        "👥 USERS - Manage family members (add SELF first!)",
         "📋 RULES - View club policies and fees",
         "❓ HELP (right side) - Reopens this tutorial anytime",
+        "👤 YOUR NAME - Shows you're logged in, logout button",
       ],
     },
-    tip: "💡 Your data is cached for 5 minutes to make the app load faster. Refresh the page (F5) to get the latest updates from other users!",
+    tip: "💡 Your data is cached for 5 minutes for faster loading. Refresh (F5) to get latest updates!",
   },
 ];
 
@@ -281,8 +345,19 @@ export function TutorialModal({ autoStart = false, onClose }) {
               <ul className="tutorial-list">
                 {step.section.items.map((item, index) => (
                   <li key={index}>
-                    <Check size={16} className="tutorial-check" />
-                    <span>{item}</span>
+                    {item.startsWith("❌") || item.startsWith("✅") ? (
+                      <>
+                        <span style={{ marginRight: "0.5rem" }}>
+                          {item.slice(0, 2)}
+                        </span>
+                        <span>{item.slice(2)}</span>
+                      </>
+                    ) : (
+                      <>
+                        <Check size={16} className="tutorial-check" />
+                        <span>{item}</span>
+                      </>
+                    )}
                   </li>
                 ))}
               </ul>
