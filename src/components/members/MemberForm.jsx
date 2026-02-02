@@ -2,19 +2,20 @@
 import { useState, useEffect } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useData } from "../../hooks/useData";
-import { X } from "lucide-react";
+import { X, AlertCircle } from "lucide-react";
 
 export function MemberForm() {
   const { members, createMember, updateMember } = useData();
   const { id } = useParams();
   const navigate = useNavigate();
-  
+
   const [formData, setFormData] = useState({
     name: "",
     relation: "",
     dietary_restrictions: "",
   });
   const [inEditMode, setInEditMode] = useState(false);
+  const [formErrors, setFormErrors] = useState({}); // FIXED: Added missing state
 
   const selectedMember = members?.find((m) => m.id === parseInt(id));
 
@@ -31,16 +32,36 @@ export function MemberForm() {
     }
   }, [id, selectedMember]);
 
+  const validateForm = () => {
+    const errors = {};
+
+    if (!formData.name || formData.name.trim().length < 2) {
+      errors.name = "Name must be at least 2 characters";
+    }
+
+    if (formData.name.length > 100) {
+      errors.name = "Name too long (max 100 characters)";
+    }
+
+    // Prevent XSS - simple check for script tags
+    if (/<script|javascript:/i.test(formData.name)) {
+      errors.name = "Invalid characters in name";
+    }
+
+    return errors;
+  };
+
   const onClear = () => {
     setFormData({
       name: "",
       relation: "",
       dietary_restrictions: "",
     });
+    setFormErrors({});
   };
 
   const onCancel = () => {
-    navigate('/');
+    navigate("/");
   };
 
   const onChange = (e) => {
@@ -49,20 +70,34 @@ export function MemberForm() {
       ...prev,
       [name]: value,
     }));
+
+    // Clear error for this field as user types
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: null }));
+    }
   };
 
   const onSubmit = async (e) => {
     e.preventDefault();
 
+    // 1. Validate
+    const errors = validateForm();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
+
+    // 2. Submit
     try {
       if (inEditMode) {
         await updateMember(selectedMember.id, formData);
       } else {
         await createMember(formData);
       }
-      navigate('/');
+      navigate("/");
     } catch (err) {
       console.error("Save failed:", err);
+      // In a real app, you might set a global error state here
       alert("Something went wrong. Please try again.");
     }
   };
@@ -70,7 +105,9 @@ export function MemberForm() {
   return (
     <div className="container">
       <header className="page-header">
-        <h1>{inEditMode ? `Edit ${selectedMember?.name}` : "Add Family Member"}</h1>
+        <h1>
+          {inEditMode ? `Edit ${selectedMember?.name}` : "Add Family Member"}
+        </h1>
         <button onClick={onCancel} className="btn-close" title="Close">
           <X size={20} />
         </button>
@@ -86,8 +123,15 @@ export function MemberForm() {
             value={formData.name}
             onChange={onChange}
             placeholder="e.g. Rick"
+            className={formErrors.name ? "input-error" : ""}
             required
           />
+          {formErrors.name && (
+            <div className="error-text">
+              <AlertCircle size={14} />
+              <span>{formErrors.name}</span>
+            </div>
+          )}
         </div>
 
         <div className="input-group">

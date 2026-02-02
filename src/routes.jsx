@@ -1,3 +1,4 @@
+// src/routes.jsx - UPDATED VERSION (Wishlist removed)
 import App from "./App.jsx";
 import { ErrorPage } from "./pages/ErrorPage.jsx";
 import { HomePage } from "./pages/HomePage.jsx";
@@ -10,7 +11,6 @@ import { DiningRoomsPage } from "./pages/DiningRoomsPage.jsx";
 import { TimeSlotsPage } from "./pages/TimeSlotsPage.jsx";
 import { ReservationsPage } from "./pages/ReservationsPage.jsx";
 import { ReservationDetailPage } from "./pages/ReservationDetailPage.jsx";
-import { SegaWishList } from "./pages/SegaWishList.jsx";
 import { ReservationForm } from "./components/reservations/ReservationForm.jsx";
 import { RulesPage } from "./pages/RulesPage.jsx";
 
@@ -20,30 +20,104 @@ export const routes = [
     element: <App />,
     errorElement: <ErrorPage />,
     children: [
-      { index: true, element: <ProtectedRoutes><HomePage /></ProtectedRoutes> },
+      {
+        index: true,
+        element: (
+          <ProtectedRoutes>
+            <HomePage />
+          </ProtectedRoutes>
+        ),
+      },
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignupPage /> },
-      
-      // System Backlog (CRT Wishlist)
-      { path: "wishlist", element: <ProtectedRoutes><SegaWishList /></ProtectedRoutes> },
-       
+
       // Members
-      { path: "members", element: <ProtectedRoutes><MembersPage /></ProtectedRoutes> },
-      { path: "members/new", element: <ProtectedRoutes><MemberForm /></ProtectedRoutes> },
-      { path: "members/:id/edit", element: <ProtectedRoutes><MemberForm /></ProtectedRoutes> },
-      
+      {
+        path: "members",
+        element: (
+          <ProtectedRoutes>
+            <MembersPage />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "members/new",
+        element: (
+          <ProtectedRoutes>
+            <MemberForm />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "members/:id/edit",
+        element: (
+          <ProtectedRoutes>
+            <MemberForm />
+          </ProtectedRoutes>
+        ),
+      },
+
       // Rules & Fees
-      { path: "rules", element: <ProtectedRoutes><RulesPage /></ProtectedRoutes> },
-      
+      {
+        path: "rules",
+        element: (
+          <ProtectedRoutes>
+            <RulesPage />
+          </ProtectedRoutes>
+        ),
+      },
+
       // Infrastructure (Read-only)
-      { path: "dining-rooms", element: <ProtectedRoutes><DiningRoomsPage /></ProtectedRoutes> },
-      { path: "time-slots", element: <ProtectedRoutes><TimeSlotsPage /></ProtectedRoutes> },
-      
+      {
+        path: "dining-rooms",
+        element: (
+          <ProtectedRoutes>
+            <DiningRoomsPage />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "time-slots",
+        element: (
+          <ProtectedRoutes>
+            <TimeSlotsPage />
+          </ProtectedRoutes>
+        ),
+      },
+
       // Reservations & Ledger Entries
-      { path: "reservations", element: <ProtectedRoutes><ReservationsPage /></ProtectedRoutes> },
-      { path: "reservations/new", element: <ProtectedRoutes><ReservationForm /></ProtectedRoutes> },
-      { path: "reservations/:id", element: <ProtectedRoutes><ReservationDetailPage /></ProtectedRoutes> },
-      { path: "reservations/:id/edit", element: <ProtectedRoutes><ReservationForm /></ProtectedRoutes> },
+      {
+        path: "reservations",
+        element: (
+          <ProtectedRoutes>
+            <ReservationsPage />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "reservations/new",
+        element: (
+          <ProtectedRoutes>
+            <ReservationForm />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "reservations/:id",
+        element: (
+          <ProtectedRoutes>
+            <ReservationDetailPage />
+          </ProtectedRoutes>
+        ),
+      },
+      {
+        path: "reservations/:id/edit",
+        element: (
+          <ProtectedRoutes>
+            <ReservationForm />
+          </ProtectedRoutes>
+        ),
+      },
     ],
   },
 ];

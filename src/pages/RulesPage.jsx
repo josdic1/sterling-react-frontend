@@ -1,27 +1,55 @@
-// src/pages/RulesPage.jsx (Fixed: Added trailing slash to fetch)
+// src/pages/RulesPage.jsx
 import { useEffect, useState } from "react";
 import { DollarSign, Users, Calendar, AlertCircle } from "lucide-react";
-
-const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
+// UPDATED: Import api helper and retryRequest
+import { api, retryRequest } from "../utils/api";
 
 export function RulesPage() {
   const [rules, setRules] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    // FIXED: Added '/' at the end to prevent 307 Redirect to HTTP
-    fetch(`${API_URL}/rules/`)
-      .then((res) => res.json())
-      .then((data) => {
+    const loadRules = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+
+        // UPDATED: Using retryRequest + api.get
+        // This makes the page robust against network instability
+        const data = await retryRequest(() => api.get("/rules/"));
+
         setRules(data);
+      } catch (err) {
+        console.error("Failed to load rules:", err);
+        setError("System unavailable. Please check your connection.");
+      } finally {
         setLoading(false);
-      });
+      }
+    };
+
+    loadRules();
   }, []);
 
-  if (loading)
-    return <div className="loading-state">Loading Club Rules...</div>;
+  // ERROR STATE UI
+  if (error) {
+    return (
+      <div className="container">
+        <div className="error-state">
+          <AlertCircle size={48} />
+          <p>{error}</p>
+          <button onClick={() => window.location.reload()}>Try Again</button>
+        </div>
+      </div>
+    );
+  }
 
-  // Icon mapping for different rule types
+  // LOADING STATE UI
+  if (loading) {
+    return <div className="loading-state">Loading Club Rules...</div>;
+  }
+
+  // Icon mapping
   const getRuleIcon = (code) => {
     switch (code) {
       case "peak_hours":
@@ -50,14 +78,12 @@ export function RulesPage() {
       <header className="page-header">
         <h1>Club Rules & Fees</h1>
       </header>
-
       <div className="rules-intro">
         <p>
           Please review our club policies to avoid additional charges. All fees
           are automatically applied when applicable.
         </p>
       </div>
-
       <div className="rules-grid">
         {rules.map((rule) => (
           <div key={rule.id} className="rule-card">
@@ -67,7 +93,6 @@ export function RulesPage() {
               <p className="rule-desc">
                 {rule.description || "Standard club policy applies."}
               </p>
-
               {rule.threshold && (
                 <div className="rule-condition">
                   <span className="condition-label">Applies when:</span>
@@ -76,7 +101,6 @@ export function RulesPage() {
                   </span>
                 </div>
               )}
-
               <div className="rule-fee">
                 <span className="fee-label">Fee Amount</span>
                 <span className="fee-amount">{formatFeeAmount(rule)}</span>

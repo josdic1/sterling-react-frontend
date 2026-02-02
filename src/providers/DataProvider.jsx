@@ -1,9 +1,9 @@
-// DataProvider.jsx (FIXED: Added trailing slashes to loadAll fetches)
+// src/providers/DataProvider.jsx
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { DataContext } from "../contexts/DataContext";
 import { AuthContext } from "../contexts/AuthContext";
-
-const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
+// IMPORT retryRequest
+import { api, retryRequest } from "../utils/api";
 
 export function DataProvider({ children }) {
   const { loggedIn } = useContext(AuthContext);
@@ -11,280 +11,219 @@ export function DataProvider({ children }) {
   const [diningRooms, setDiningRooms] = useState([]);
   const [reservations, setReservations] = useState([]);
   const [members, setMembers] = useState([]);
-  const [fees, setFees] = useState([]);
-  const [rules, setRules] = useState([]);
-  const [timeSlots, setTimeSlots] = useState([]);
   const [loading, setLoading] = useState(true);
 
-  const getToken = useCallback(() => localStorage.getItem("token"), []);
+  // --- RESERVATIONS ---
 
-  const fetchReservationById = useCallback(
-    async (id) => {
-      try {
-        const token = getToken();
-        const resp = await fetch(`${API_URL}/reservations/${id}`, {
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (!resp.ok) return null;
-        const data = await resp.json();
-        setReservations((prev) =>
-          prev.some((r) => r.id === data.id)
-            ? prev.map((r) => (r.id === data.id ? data : r))
-            : [...prev, data],
-        );
-        return data;
-      } catch (err) {
-        console.error(err);
-        return null;
-      }
-    },
-    [getToken],
-  );
+  const fetchReservationById = useCallback(async (id) => {
+    try {
+      // Wrapped in retryRequest
+      const data = await retryRequest(() => api.get(`/reservations/${id}`));
 
-  const createReservation = useCallback(
-    async (newRes) => {
-      const token = getToken();
-      const resp = await fetch(`${API_URL}/reservations/`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(newRes),
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        setReservations((prev) => [...prev, data]);
-        return data;
-      }
+      setReservations((prev) =>
+        prev.some((r) => r.id === data.id)
+          ? prev.map((r) => (r.id === data.id ? data : r))
+          : [...prev, data],
+      );
+      return data;
+    } catch (err) {
+      console.error("fetchReservationById error:", err);
       return null;
-    },
-    [getToken],
-  );
+    }
+  }, []);
 
-  const updateReservation = useCallback(
-    async (id, updateData) => {
-      const token = getToken();
-      const resp = await fetch(`${API_URL}/reservations/${id}`, {
-        method: "PATCH",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
-        },
-        body: JSON.stringify(updateData),
-      });
-      if (resp.ok) {
-        const data = await resp.json();
-        setReservations((prev) => prev.map((r) => (r.id === id ? data : r)));
-        return data;
-      }
+  const createReservation = useCallback(async (newRes) => {
+    try {
+      // Typically we DO NOT retry POST requests (to avoid duplicates)
+      const data = await api.post("/reservations/", newRes);
+      setReservations((prev) => [...prev, data]);
+      return data;
+    } catch (err) {
+      console.error("createReservation error:", err);
       return null;
-    },
-    [getToken],
-  );
+    }
+  }, []);
 
-  const deleteReservation = useCallback(
-    async (id) => {
-      const token = getToken();
-      const resp = await fetch(`${API_URL}/reservations/${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (resp.ok) setReservations((prev) => prev.filter((r) => r.id !== id));
-    },
-    [getToken],
-  );
+  const updateReservation = useCallback(async (id, updateData) => {
+    try {
+      const data = await api.patch(`/reservations/${id}`, updateData);
+      setReservations((prev) => prev.map((r) => (r.id === id ? data : r)));
+      return data;
+    } catch (err) {
+      console.error("updateReservation error:", err);
+      return null;
+    }
+  }, []);
 
-  const fetchAttendees = useCallback(
-    async (resId) => {
-      try {
-        const token = getToken();
-        const resp = await fetch(
-          `${API_URL}/reservations/${resId}/attendees/`,
-          {
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        if (resp.ok) return await resp.json();
-        return [];
-      } catch (err) {
-        console.error(err);
-        return [];
-      }
-    },
-    [getToken],
-  );
+  const deleteReservation = useCallback(async (id) => {
+    try {
+      await api.delete(`/reservations/${id}`);
+      setReservations((prev) => prev.filter((r) => r.id !== id));
+      return true;
+    } catch (err) {
+      console.error("deleteReservation error:", err);
+      return false;
+    }
+  }, []);
 
-  const addAttendee = useCallback(
-    async (resId, guestData) => {
-      try {
-        const token = getToken();
-        const resp = await fetch(
-          `${API_URL}/reservations/${resId}/attendees/`,
-          {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${token}`,
-            },
-            body: JSON.stringify(guestData),
-          },
-        );
-        if (resp.ok) {
-          const newAttendee = await resp.json();
-          setReservations((prev) =>
-            prev.map((r) =>
-              r.id === Number(resId)
-                ? { ...r, attendee_count: (r.attendee_count || 0) + 1 }
-                : r,
-            ),
-          );
-          return { success: true, data: newAttendee };
-        }
-        return { success: false };
-      } catch (err) {
-        console.error(err);
-        return { success: false };
-      }
-    },
-    [getToken],
-  );
+  // --- ATTENDEES ---
 
-  const removeAttendee = useCallback(
-    async (resId, attendeeId) => {
-      try {
-        const token = getToken();
-        const resp = await fetch(
-          `${API_URL}/reservations/${resId}/attendees/${attendeeId}/`,
-          {
-            method: "DELETE",
-            headers: { Authorization: `Bearer ${token}` },
-          },
-        );
-        if (resp.ok) {
-          setReservations((prev) =>
-            prev.map((r) =>
-              r.id === Number(resId)
-                ? {
-                    ...r,
-                    attendee_count: Math.max(0, (r.attendee_count || 0) - 1),
-                  }
-                : r,
-            ),
-          );
-          return { success: true };
-        }
-        return { success: false };
-      } catch (err) {
-        console.error(err);
-        return { success: false };
-      }
-    },
-    [getToken],
-  );
+  const fetchAttendees = useCallback(async (resId) => {
+    try {
+      // Reads are safe to retry
+      const data = await retryRequest(() =>
+        api.get(`/reservations/${resId}/attendees/`),
+      );
+      return data || [];
+    } catch (err) {
+      console.error("fetchAttendees error:", err);
+      return [];
+    }
+  }, []);
 
-  const createMember = useCallback(
-    async (memberData) => {
-      try {
-        const token = getToken();
-        const resp = await fetch(`${API_URL}/members/`, {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(memberData),
-        });
-        if (resp.ok) {
-          const newMember = await resp.json();
-          setMembers((prev) => [...prev, newMember]);
-          return { success: true, data: newMember };
-        }
-        return { success: false };
-      } catch (err) {
-        console.error(err);
-        return { success: false };
-      }
-    },
-    [getToken],
-  );
+  const addAttendee = useCallback(async (resId, guestData) => {
+    try {
+      const newAttendee = await api.post(
+        `/reservations/${resId}/attendees/`,
+        guestData,
+      );
+      setReservations((prev) =>
+        prev.map((r) =>
+          r.id === Number(resId)
+            ? { ...r, attendee_count: (r.attendee_count || 0) + 1 }
+            : r,
+        ),
+      );
+      return { success: true, data: newAttendee };
+    } catch (err) {
+      console.error("addAttendee error:", err);
+      return { success: false };
+    }
+  }, []);
 
-  const updateMember = useCallback(
-    async (memberId, updateData) => {
-      try {
-        const token = getToken();
-        const resp = await fetch(`${API_URL}/members/${memberId}/`, {
-          method: "PATCH",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify(updateData),
-        });
-        if (resp.ok) {
-          const updatedMember = await resp.json();
-          setMembers((prev) =>
-            prev.map((m) => (m.id === memberId ? updatedMember : m)),
-          );
-          return { success: true, data: updatedMember };
-        }
-        return { success: false };
-      } catch (err) {
-        console.error(err);
-        return { success: false };
-      }
-    },
-    [getToken],
-  );
+  const removeAttendee = useCallback(async (resId, attendeeId) => {
+    try {
+      await api.delete(`/reservations/${resId}/attendees/${attendeeId}/`);
+      setReservations((prev) =>
+        prev.map((r) =>
+          r.id === Number(resId)
+            ? { ...r, attendee_count: Math.max(0, (r.attendee_count || 0) - 1) }
+            : r,
+        ),
+      );
+      return { success: true };
+    } catch (err) {
+      console.error("removeAttendee error:", err);
+      return { success: false };
+    }
+  }, []);
 
-  const deleteMember = useCallback(
-    async (memberId) => {
-      try {
-        const token = getToken();
-        const resp = await fetch(`${API_URL}/members/${memberId}/`, {
-          method: "DELETE",
-          headers: { Authorization: `Bearer ${token}` },
-        });
-        if (resp.ok) {
-          setMembers((prev) => prev.filter((m) => m.id !== memberId));
-          return { success: true };
-        }
-        return { success: false };
-      } catch (err) {
-        console.error(err);
-        return { success: false };
-      }
-    },
-    [getToken],
-  );
+  // --- MEMBERS ---
+
+  const createMember = useCallback(async (memberData) => {
+    try {
+      const newMember = await api.post("/members/", memberData);
+      setMembers((prev) => [...prev, newMember]);
+      return { success: true, data: newMember };
+    } catch (err) {
+      console.error("createMember error:", err);
+      return { success: false };
+    }
+  }, []);
+
+  const updateMember = useCallback(async (memberId, updateData) => {
+    try {
+      const updatedMember = await api.patch(
+        `/members/${memberId}/`,
+        updateData,
+      );
+      setMembers((prev) =>
+        prev.map((m) => (m.id === memberId ? updatedMember : m)),
+      );
+      return { success: true, data: updatedMember };
+    } catch (err) {
+      console.error("updateMember error:", err);
+      return { success: false };
+    }
+  }, []);
+
+  const deleteMember = useCallback(async (memberId) => {
+    try {
+      await api.delete(`/members/${memberId}/`);
+      setMembers((prev) => prev.filter((m) => m.id !== memberId));
+      return { success: true };
+    } catch (err) {
+      console.error("deleteMember error:", err);
+      return { success: false };
+    }
+  }, []);
+
+  // --- INITIAL LOAD ---
 
   useEffect(() => {
     const loadAll = async () => {
-      const token = getToken();
+      const token = localStorage.getItem("token");
       if (!token || !loggedIn) {
         setLoading(false);
         return;
       }
+
+      // 1. Check Cache
+      const cacheKey = `sterling_cache_${token}`;
+      const cachedData = localStorage.getItem(cacheKey);
+      const cacheTime = localStorage.getItem(`${cacheKey}_time`);
+
+      if (cachedData && cacheTime) {
+        const age = Date.now() - parseInt(cacheTime);
+        if (age < 5 * 60 * 1000) {
+          try {
+            console.log("Loading from cache...");
+            const parsed = JSON.parse(cachedData);
+            setDiningRooms(parsed.rooms || []);
+            setReservations(parsed.reservations || []);
+            setMembers(parsed.members || []);
+            setLoading(false);
+            return;
+          } catch (e) {
+            localStorage.removeItem(cacheKey);
+          }
+        }
+      }
+
+      // 2. Fetch Fresh Data (WITH RETRY)
       setLoading(true);
       try {
-        const headers = { Authorization: `Bearer ${token}` };
-        // FIXED: Added trailing slashes here to match backend expectations and avoid 307 redirects
-        const [roomsRes, reservationsRes, membersRes] = await Promise.all([
-          fetch(`${API_URL}/dining-rooms/`, { headers }),
-          fetch(`${API_URL}/reservations/`, { headers }),
-          fetch(`${API_URL}/members/`, { headers }),
+        // We use retryRequest here so the initial app load is robust
+        const [roomsData, resData, memData] = await Promise.all([
+          retryRequest(() => api.get("/dining-rooms/")),
+          retryRequest(() => api.get("/reservations/")),
+          retryRequest(() => api.get("/members/")),
         ]);
-        if (roomsRes.ok) setDiningRooms(await roomsRes.json());
-        if (reservationsRes.ok) setReservations(await reservationsRes.json());
-        if (membersRes.ok) setMembers(await membersRes.json());
+
+        setDiningRooms(roomsData || []);
+        setReservations(resData || []);
+        setMembers(memData || []);
+
+        // Update Cache
+        localStorage.setItem(
+          cacheKey,
+          JSON.stringify({
+            rooms: roomsData,
+            reservations: resData,
+            members: memData,
+          }),
+        );
+        localStorage.setItem(`${cacheKey}_time`, String(Date.now()));
       } catch (err) {
-        console.error("loadAll failed:", err);
+        console.error("loadAll failed after retries:", err);
+        // Here you might trigger a global toast error
       } finally {
         setLoading(false);
       }
     };
+
     loadAll();
-  }, [loggedIn, getToken]);
+  }, [loggedIn]);
 
   const value = {
     diningRooms,
@@ -302,7 +241,6 @@ export function DataProvider({ children }) {
     addAttendee,
     removeAttendee,
   };
-  console.log("Build: 1769978710 - Fixed Trailing Slashes");
-  console.log("Production Build Verified: HTTPS-Only - 1.1.0");
+
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;
 }

@@ -458,18 +458,15 @@ button:active {
   }
 }
 
-.reservation-item {
-  background: white;
-  border: 1px solid var(--border-color);
-  border-left: 4px solid var(--banking-black);
-  padding: 0;
-  cursor: pointer;
-  transition: all 0.2s;
-  display: grid;
-  grid-template-columns: 80px 1fr 50px;
-  gap: 0;
-  overflow: hidden;
-  position: relative;
+@media (max-width: 767px) {
+  .reservation-item {
+    padding: 0.5rem; /* Add padding on mobile */
+    min-height: 88px; /* Ensure touch-friendly height */
+  }
+
+  .res-content {
+    padding: 1rem; /* Increase internal padding */
+  }
 }
 
 .reservation-item:hover {
@@ -1448,4 +1445,405 @@ button:active {
 
 .nav-link-with-tooltip:hover::before {
   opacity: 1;
+}
+
+/* Tutorial Modal Styles - Add to index.css */
+
+/* ==================== TUTORIAL MODAL ==================== */
+.tutorial-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.75);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  padding: 1rem;
+  animation: fadeIn 0.3s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.tutorial-modal {
+  background: white;
+  border: 2px solid var(--banking-black);
+  max-width: 600px;
+  width: 100%;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    transform: translateY(50px);
+    opacity: 0;
+  }
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
+}
+
+/* Header */
+.tutorial-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-bottom: 2px solid var(--border-color);
+  background: var(--off-white);
+}
+
+.tutorial-progress {
+  flex: 1;
+}
+
+.tutorial-step-counter {
+  font-size: 0.7rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--banking-grey);
+  display: block;
+  margin-bottom: 0.5rem;
+}
+
+.tutorial-progress-bar {
+  height: 4px;
+  background: var(--border-color);
+  border-radius: 2px;
+  overflow: hidden;
+}
+
+.tutorial-progress-fill {
+  height: 100%;
+  background: var(--sterling-accent);
+  transition: width 0.3s ease;
+}
+
+.tutorial-skip-btn {
+  background: transparent;
+  color: var(--banking-grey);
+  padding: 0.5rem;
+  border: none;
+  margin-left: 1rem;
+}
+
+.tutorial-skip-btn:hover {
+  background: transparent;
+  color: var(--sterling-accent);
+  transform: none;
+}
+
+/* Content */
+.tutorial-content {
+  padding: 2rem;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.tutorial-emoji {
+  font-size: 4rem;
+  text-align: center;
+  margin-bottom: 1rem;
+}
+
+.tutorial-content h2 {
+  font-size: 1.5rem;
+  margin: 0 0 1rem 0;
+  text-align: center;
+  color: var(--banking-black);
+}
+
+.tutorial-description {
+  font-size: 1rem;
+  line-height: 1.6;
+  color: var(--banking-grey);
+  margin-bottom: 1.5rem;
+  text-align: center;
+}
+
+.tutorial-section {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: var(--off-white);
+  border-left: 3px solid var(--sterling-accent);
+}
+
+.tutorial-section h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 1rem 0;
+  color: var(--banking-black);
+}
+
+.tutorial-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.tutorial-list li {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.tutorial-check {
+  color: var(--success-green);
+  flex-shrink: 0;
+  margin-top: 0.25rem;
+}
+
+.tutorial-ordered-list {
+  padding-left: 1.5rem;
+  margin: 0;
+}
+
+.tutorial-ordered-list li {
+  margin-bottom: 0.75rem;
+  font-size: 0.95rem;
+  line-height: 1.5;
+}
+
+.tutorial-tip {
+  margin-top: 1.5rem;
+  padding: 1rem;
+  background: #fff9e6;
+  border: 1px solid #ffd700;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  line-height: 1.5;
+}
+
+.tutorial-tip strong {
+  color: var(--banking-black);
+}
+
+/* Footer */
+.tutorial-footer {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 1.5rem;
+  border-top: 2px solid var(--border-color);
+  background: var(--off-white);
+}
+
+.tutorial-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.5rem;
+  font-weight: 700;
+  font-size: 0.75rem;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tutorial-btn-primary {
+  background: var(--sterling-accent);
+  color: white;
+}
+
+.tutorial-btn-primary:hover {
+  background: var(--banking-black);
+  transform: translateY(-1px);
+}
+
+.tutorial-btn-secondary {
+  background: white;
+  color: var(--banking-black);
+  border: 1px solid var(--border-color);
+}
+
+.tutorial-btn-secondary:hover {
+  background: var(--banking-black);
+  color: white;
+  border-color: var(--banking-black);
+  transform: translateY(-1px);
+}
+
+.tutorial-btn-secondary:disabled {
+  opacity: 0.3;
+  cursor: not-allowed;
+  pointer-events: none;
+}
+
+/* Progress Dots */
+.tutorial-dots {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+}
+
+.tutorial-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--border-color);
+  border: none;
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.tutorial-dot:hover {
+  background: var(--banking-grey);
+  transform: scale(1.2);
+}
+
+.tutorial-dot.active {
+  width: 12px;
+  height: 12px;
+  background: var(--sterling-accent);
+}
+
+/* Help Button in Nav */
+.help-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: transparent;
+  color: var(--banking-grey);
+  border: 1px solid var(--border-color);
+  padding: 0.5rem 1rem;
+  font-size: 0.75rem;
+  border-radius: 20px;
+  transition: all 0.2s;
+}
+
+.help-btn:hover {
+  background: var(--sterling-accent);
+  color: white;
+  border-color: var(--sterling-accent);
+  transform: translateY(-1px);
+}
+
+.help-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  background: var(--sterling-accent);
+  color: white;
+  font-weight: 700;
+  font-size: 0.75rem;
+}
+
+.help-text {
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+
+/* Mobile Responsive */
+@media (max-width: 767px) {
+  .tutorial-modal {
+    max-width: 100%;
+    max-height: 100vh;
+    height: 100vh;
+  }
+
+  .tutorial-content {
+    padding: 1.5rem;
+  }
+
+  .tutorial-emoji {
+    font-size: 3rem;
+  }
+
+  .tutorial-content h2 {
+    font-size: 1.25rem;
+  }
+
+  .tutorial-footer {
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+
+  .tutorial-btn {
+    flex: 1;
+    min-width: 120px;
+    justify-content: center;
+  }
+
+  .tutorial-dots {
+    order: -1;
+    width: 100%;
+    justify-content: center;
+  }
+
+  .help-text {
+    display: none;
+  }
+
+  .help-btn {
+    padding: 0.5rem;
+    border-radius: 50%;
+    width: 40px;
+    height: 40px;
+    justify-content: center;
+  }
+}
+
+/* Large text mode for accessibility */
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-modal {
+    animation: none;
+  }
+
+  .tutorial-overlay {
+    animation: none;
+  }
+}
+
+@media (max-width: 767px) {
+  /* Bigger touch targets */
+  button {
+    min-height: 48px;
+    padding: 1rem 1.5rem;
+  }
+  
+  /* Full-width buttons in forms */
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+  }
+  
+  /* Stack form rows */
+  .form-row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  /* Responsive tables */
+  .reservation-table {
+    display: block;
+    overflow-x: auto;
+  }
+  
+  /* Hide desktop-only columns */
+  .desktop-only {
+    display: none;
+  }
 }

@@ -1,235 +1,331 @@
 import { useState, useEffect } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useData } from "../../hooks/useData";
+import { useToastTrigger } from "../../hooks/useToast";
+import { Save, X, AlertCircle, RotateCcw } from "lucide-react";
 
 export function ReservationForm() {
-  const { id } = useParams();
+  const { id } = useParams(); // If ID exists, we are editing. If not, creating.
   const navigate = useNavigate();
-  
-  const { 
-    diningRooms, 
-    reservations, 
-    loading,
-    fetchReservationById, 
-    updateReservation, 
-    createReservation 
-  } = useData();
+  const { diningRooms, createReservation, updateReservation, reservations } =
+    useData();
+  const { addToast } = useToastTrigger();
 
-  const [isFetching, setIsFetching] = useState(!!id);
+  const isEditMode = Boolean(id);
+  const existingReservation = isEditMode
+    ? reservations.find((r) => r.id === parseInt(id))
+    : null;
+
   const [formData, setFormData] = useState({
-    date: "",
-    meal_type: "",
     dining_room_id: "",
+    date: "",
+    meal_type: "dinner",
     start_time: "",
     end_time: "",
     notes: "",
   });
 
-  const resId = id ? parseInt(id) : null;
+  const [formErrors, setFormErrors] = useState({});
+  const [draftLoaded, setDraftLoaded] = useState(false);
 
-  // Helper: Convert time object to HH:MM string
-  const formatTimeForInput = (timeValue) => {
-    if (!timeValue) return "";
-    if (typeof timeValue === 'string') {
-      // Already a string, just take HH:MM part
-      return timeValue.split(':').slice(0, 2).join(':');
+  // 1. LOAD DATA (Edit Mode OR Draft Mode)
+  useEffect(() => {
+    // A. Edit Mode: Load existing data
+    if (isEditMode && existingReservation) {
+      setFormData({
+        dining_room_id: existingReservation.dining_room_id,
+        date: existingReservation.date,
+        meal_type: existingReservation.meal_type,
+        start_time: existingReservation.start_time,
+        end_time: existingReservation.end_time,
+        notes: existingReservation.notes || "",
+      });
+      return;
     }
-    return timeValue;
+
+    // B. Create Mode: Check for Autosave Draft
+    if (!isEditMode) {
+      const draft = localStorage.getItem("reservation_draft");
+      if (draft) {
+        try {
+          const parsed = JSON.parse(draft);
+          // Simple validation to ensure draft isn't empty
+          if (parsed.date || parsed.notes || parsed.dining_room_id) {
+            if (
+              window.confirm(
+                "Found an unsaved reservation draft. Would you like to resume?",
+              )
+            ) {
+              setFormData(parsed);
+              setDraftLoaded(true);
+              addToast("Draft restored successfully", "success");
+            } else {
+              localStorage.removeItem("reservation_draft");
+            }
+          }
+        } catch (e) {
+          console.error("Failed to parse draft", e);
+        }
+      }
+    }
+  }, [isEditMode, existingReservation, addToast]);
+
+  // 2. AUTOSAVE INTERVAL (Only in Create Mode)
+  useEffect(() => {
+    if (isEditMode) return; // Don't autosave when editing an existing confirmed record
+
+    const saveInterval = setInterval(() => {
+      // Only save if user has actually typed something
+      if (formData.date || formData.notes || formData.dining_room_id) {
+        localStorage.setItem("reservation_draft", JSON.stringify(formData));
+      }
+    }, 5000); // Save every 5 seconds
+
+    return () => clearInterval(saveInterval);
+  }, [formData, isEditMode]);
+
+  const onChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+    // Clear error for field
+    if (formErrors[name]) {
+      setFormErrors((prev) => ({ ...prev, [name]: null }));
+    }
   };
 
-  useEffect(() => {
-    const init = async () => {
-      if (!resId) return;
+  const clearDraft = () => {
+    if (window.confirm("Are you sure you want to discard this draft?")) {
+      localStorage.removeItem("reservation_draft");
+      setFormData({
+        dining_room_id: "",
+        date: "",
+        meal_type: "dinner",
+        start_time: "",
+        end_time: "",
+        notes: "",
+      });
+      setDraftLoaded(false);
+      addToast("Draft discarded", "info");
+    }
+  };
 
-      let target = reservations?.find(r => r.id === resId);
-      if (!target) {
-        target = await fetchReservationById(resId);
-      }
+  const validate = () => {
+    const errors = {};
+    if (!formData.dining_room_id)
+      errors.dining_room_id = "Dining Room is required";
+    if (!formData.date) errors.date = "Date is required";
+    if (!formData.start_time) errors.start_time = "Start time is required";
+    if (!formData.end_time) errors.end_time = "End time is required";
 
-      if (target) {
-        setFormData({
-          date: target.date || "",
-          meal_type: target.meal_type || "",
-          dining_room_id: String(target.dining_room_id || ""),
-          start_time: formatTimeForInput(target.start_time),  // FORMAT HERE
-          end_time: formatTimeForInput(target.end_time),      // FORMAT HERE
-          notes: target.notes || "",
-        });
-      } else {
-        navigate("/", { replace: true });
-      }
-      setIsFetching(false);
-    };
+    // Basic logic check
+    if (
+      formData.start_time &&
+      formData.end_time &&
+      formData.start_time >= formData.end_time
+    ) {
+      errors.end_time = "End time must be after start time";
+    }
 
-    init();
-  }, [resId, fetchReservationById, navigate, reservations]);
+    return errors;
+  };
 
   const onSubmit = async (e) => {
     e.preventDefault();
-    
-    const submissionData = {
-      ...formData,
-      dining_room_id: parseInt(formData.dining_room_id)
-    };
+
+    const errors = validate();
+    if (Object.keys(errors).length > 0) {
+      setFormErrors(errors);
+      return;
+    }
 
     try {
-      if (resId) {
-        await updateReservation(resId, submissionData);
-        navigate(-1);
+      let result;
+
+      // Ensure dining_room_id is an integer
+      const payload = {
+        ...formData,
+        dining_room_id: parseInt(formData.dining_room_id),
+      };
+
+      if (isEditMode) {
+        result = await updateReservation(parseInt(id), payload);
       } else {
-        const newRes = await createReservation(submissionData);
-        navigate(`/reservations/${newRes.id}`, { replace: true });
+        result = await createReservation(payload);
+      }
+
+      if (result) {
+        // SUCCESS: Clear Draft
+        if (!isEditMode) {
+          localStorage.removeItem("reservation_draft");
+        }
+        addToast(
+          isEditMode ? "Reservation updated" : "Reservation created",
+          "success",
+        );
+        navigate("/reservations");
+      } else {
+        addToast("Failed to save reservation. Check availability.", "error");
       }
     } catch (err) {
-      console.error("Save failed", err);
-      alert("Could not save reservation. Check console for details.");
+      console.error("Submit failed", err);
+      addToast("An error occurred", "error");
     }
   };
-
-  // Generate time options based on meal type
-  const generateTimeOptions = (mealType) => {
-    if (!mealType) return [];
-    
-    const options = [];
-    let startHour, endHour;
-    
-    if (mealType === "lunch") {
-      startHour = 11;
-      endHour = 14; // 2 PM
-    } else {
-      startHour = 16; // 4 PM
-      endHour = 19; // 7 PM
-    }
-    
-    for (let h = startHour; h <= endHour; h++) {
-      for (let m of [0, 15, 30, 45]) {
-        const hour12 = h % 12 || 12;
-        const ampm = h >= 12 ? 'PM' : 'AM';
-        const display = `${hour12}:${String(m).padStart(2, '0')} ${ampm}`;
-        const value = `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
-        options.push({ display, value });
-      }
-    }
-    
-    return options;
-  };
-
-  const timeOptions = generateTimeOptions(formData.meal_type);
-
-  const handleMealTypeChange = (newMealType) => {
-    // Only clear times if switching meal types, not on initial load
-    if (formData.meal_type && formData.meal_type !== newMealType) {
-      setFormData({
-        ...formData,
-        meal_type: newMealType,
-        start_time: "",
-        end_time: ""
-      });
-    } else {
-      setFormData({
-        ...formData,
-        meal_type: newMealType
-      });
-    }
-  };
-
-  if (loading || isFetching) {
-    return <div className="loading-state">SYNCHRONIZING LEDGER...</div>;
-  }
 
   return (
     <div className="container">
       <header className="page-header">
-        <h1 className="text-uppercase">{resId ? "Modify Entry" : "New Entry"}</h1>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <h1>{isEditMode ? "Edit Reservation" : "New Reservation"}</h1>
+          {!isEditMode && draftLoaded && (
+            <span className="badge-draft">Draft Restored</span>
+          )}
+        </div>
+
+        <div style={{ display: "flex", gap: "10px" }}>
+          {!isEditMode && (formData.date || formData.notes) && (
+            <button
+              type="button"
+              onClick={clearDraft}
+              className="btn-secondary"
+              title="Discard Draft"
+            >
+              <RotateCcw size={16} style={{ marginRight: "5px" }} />
+              Reset
+            </button>
+          )}
+          <button
+            onClick={() => navigate("/reservations")}
+            className="btn-close"
+          >
+            <X size={20} />
+          </button>
+        </div>
       </header>
 
       <form onSubmit={onSubmit} className="banking-form">
-        <div className="input-group">
-          <label>Date</label>
-          <input 
-            type="date" 
-            value={formData.date} 
-            onChange={e => setFormData({...formData, date: e.target.value})} 
-            required 
-          />
-        </div>
+        <div className="form-grid">
+          {/* DINING ROOM */}
+          <div className="input-group">
+            <label htmlFor="dining_room_id">Dining Room</label>
+            <select
+              id="dining_room_id"
+              name="dining_room_id"
+              value={formData.dining_room_id}
+              onChange={onChange}
+              className={formErrors.dining_room_id ? "input-error" : ""}
+            >
+              <option value="">-- Select Room --</option>
+              {diningRooms.map((room) => (
+                <option key={room.id} value={room.id}>
+                  {room.name} (Cap: {room.capacity})
+                </option>
+              ))}
+            </select>
+            {formErrors.dining_room_id && (
+              <div className="error-text">
+                <AlertCircle size={14} /> {formErrors.dining_room_id}
+              </div>
+            )}
+          </div>
 
-        <div className="input-group">
-          <label>Meal Type</label>
-          <select
-            value={formData.meal_type}
-            onChange={e => handleMealTypeChange(e.target.value)}
-            required
-          >
-            <option value="">Select Meal...</option>
-            <option value="lunch">LUNCH (11 AM - 2 PM)</option>
-            <option value="dinner">DINNER (4 PM - 7 PM)</option>
-          </select>
-        </div>
+          {/* MEAL TYPE */}
+          <div className="input-group">
+            <label htmlFor="meal_type">Meal Type</label>
+            <select
+              id="meal_type"
+              name="meal_type"
+              value={formData.meal_type}
+              onChange={onChange}
+            >
+              <option value="breakfast">Breakfast</option>
+              <option value="lunch">Lunch</option>
+              <option value="dinner">Dinner</option>
+              <option value="event">Special Event</option>
+            </select>
+          </div>
 
-        <div className="input-group">
-          <label>Location</label>
-          <select
-            value={formData.dining_room_id}
-            onChange={e => setFormData({...formData, dining_room_id: e.target.value})}
-            required
-          >
-            <option value="">Select Room...</option>
-            {diningRooms.map(room => (
-              <option key={room.id} value={String(room.id)}>
-                {room.name.toUpperCase()}
-              </option>
-            ))}
-          </select>
-        </div>
+          {/* DATE */}
+          <div className="input-group">
+            <label htmlFor="date">Date</label>
+            <input
+              type="date"
+              id="date"
+              name="date"
+              value={formData.date}
+              onChange={onChange}
+              className={formErrors.date ? "input-error" : ""}
+            />
+            {formErrors.date && (
+              <div className="error-text">
+                <AlertCircle size={14} /> {formErrors.date}
+              </div>
+            )}
+          </div>
 
-        <div className="input-group">
-          <label>Start Time</label>
-          <select
-            value={formData.start_time}
-            onChange={e => setFormData({...formData, start_time: e.target.value})}
-            required
-            disabled={!formData.meal_type}
-          >
-            <option value="">Select Start Time...</option>
-            {timeOptions.map(time => (
-              <option key={`start-${time.value}`} value={time.value}>
-                {time.display}
-              </option>
-            ))}
-          </select>
-        </div>
+          {/* TIME ROW */}
+          <div className="input-row">
+            <div className="input-group">
+              <label htmlFor="start_time">Start Time</label>
+              <input
+                type="time"
+                id="start_time"
+                name="start_time"
+                value={formData.start_time}
+                onChange={onChange}
+                className={formErrors.start_time ? "input-error" : ""}
+              />
+            </div>
+            <div className="input-group">
+              <label htmlFor="end_time">End Time</label>
+              <input
+                type="time"
+                id="end_time"
+                name="end_time"
+                value={formData.end_time}
+                onChange={onChange}
+                className={formErrors.end_time ? "input-error" : ""}
+              />
+            </div>
+          </div>
+          {formErrors.end_time && (
+            <div
+              className="error-text"
+              style={{ marginTop: "-15px", marginBottom: "15px" }}
+            >
+              <AlertCircle size={14} /> {formErrors.end_time}
+            </div>
+          )}
 
-        <div className="input-group">
-          <label>End Time</label>
-          <select
-            value={formData.end_time}
-            onChange={e => setFormData({...formData, end_time: e.target.value})}
-            required
-            disabled={!formData.meal_type}
-          >
-            <option value="">Select End Time...</option>
-            {timeOptions.map(time => (
-              <option key={`end-${time.value}`} value={time.value}>
-                {time.display}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        <div className="input-group">
-          <label>Notes</label>
-          <textarea
-            value={formData.notes}
-            onChange={e => setFormData({...formData, notes: e.target.value})}
-          />
+          {/* NOTES */}
+          <div className="input-group">
+            <label htmlFor="notes">Notes / Special Requests</label>
+            <textarea
+              id="notes"
+              name="notes"
+              value={formData.notes}
+              onChange={onChange}
+              rows="3"
+              placeholder="Allergies, seating preferences, etc."
+            />
+          </div>
         </div>
 
         <div className="form-actions">
-          <button type="submit" className="btn-primary">Save</button>
-          <button type="button" onClick={() => navigate(-1)}>Cancel</button>
+          <button type="submit" className="btn-primary">
+            <Save size={18} style={{ marginRight: "8px" }} />
+            {isEditMode ? "Update Reservation" : "Confirm Booking"}
+          </button>
         </div>
       </form>
+
+      {!isEditMode && (
+        <div className="autosave-indicator">
+          <small className="text-muted">
+            Form autosaves locally every 5 seconds.
+          </small>
+        </div>
+      )}
     </div>
   );
 }

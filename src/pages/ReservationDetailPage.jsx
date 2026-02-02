@@ -6,9 +6,10 @@ import { useToastTrigger } from "../hooks/useToast";
 import { AttendeeList } from "../components/attendees/AttendeeList";
 import { AttendeeForm } from "../components/attendees/AttendeeForm";
 import { SaveFloater } from "../components/shared/SaveFloater";
-import { Edit3, UserPlus, Clock, DollarSign } from "lucide-react";
+import { Edit3, UserPlus, Clock, DollarSign, AlertCircle } from "lucide-react";
 
-const API_URL = "https://sterling-fastapi-backend-production.up.railway.app";
+// UPDATED: Import api helper and retryRequest instead of manual buildApiUrl
+import { api, retryRequest } from "../utils/api";
 
 export function ReservationDetailPage() {
   const { id } = useParams();
@@ -16,6 +17,7 @@ export function ReservationDetailPage() {
   const [needsFetch, setNeedsFetch] = useState(true);
   const [showSaveFloater, setShowSaveFloater] = useState(false);
   const [fees, setFees] = useState([]);
+  const [feesError, setFeesError] = useState(null);
   const [currentAttendees, setCurrentAttendees] = useState([]);
 
   const { addToast } = useToastTrigger();
@@ -44,45 +46,61 @@ export function ReservationDetailPage() {
     return `${hour12}:${minutes} ${ampm}`;
   };
 
+  // Sync Reservation Data
   useEffect(() => {
     const sync = async () => {
-      if (!resId) return;
+      try {
+        if (!resId) return;
 
-      if (reservation) {
+        if (reservation) {
+          const attendees = await fetchAttendees(resId);
+          setCurrentAttendees(attendees || []);
+          setNeedsFetch(false);
+          return;
+        }
+
+        // DataProvider handles retries for these methods internally
+        const current = await fetchReservationById(resId);
+        if (!current) {
+          navigate("/", { replace: true });
+          return;
+        }
+
         const attendees = await fetchAttendees(resId);
         setCurrentAttendees(attendees || []);
         setNeedsFetch(false);
-        return;
+      } catch (err) {
+        console.error("Sync failed:", err);
       }
-
-      const current = await fetchReservationById(resId);
-      if (!current) {
-        navigate("/", { replace: true });
-        return;
-      }
-
-      const attendees = await fetchAttendees(resId);
-      setCurrentAttendees(attendees || []);
-      setNeedsFetch(false);
     };
 
     sync();
   }, [resId, reservation, fetchReservationById, fetchAttendees, navigate]);
 
-  // Fetch fees
+  // Fetch fees with Retry Pattern
   useEffect(() => {
     const loadFees = async () => {
-      const token = localStorage.getItem("token");
-      // FIXED: Added trailing slash to prevent 307 redirect
-      const resp = await fetch(`${API_URL}/reservations/${resId}/fees/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      if (resp.ok) {
-        setFees(await resp.json());
+      if (!resId) return;
+
+      try {
+        setFeesError(null);
+
+        // UPDATED: Using retryRequest wrapper + api helper
+        // This will try up to 3 times if the connection fails
+        const data = await retryRequest(() =>
+          api.get(`/reservations/${resId}/fees/`),
+        );
+
+        setFees(data);
+      } catch (err) {
+        console.error("Fee fetch failed after retries:", err);
+        setFeesError(
+          "Could not load fee information. Please check your connection.",
+        );
       }
     };
 
-    if (resId) loadFees();
+    loadFees();
   }, [resId, currentAttendees]);
 
   const unseatedMembers =
@@ -179,7 +197,19 @@ export function ReservationDetailPage() {
         </div>
       </div>
 
-      {fees.length > 0 && (
+      {/* FEES ERROR STATE */}
+      {feesError && (
+        <div
+          className="error-state"
+          style={{ padding: "1rem", margin: "1rem 0" }}
+        >
+          <AlertCircle size={24} />
+          <p>{feesError}</p>
+        </div>
+      )}
+
+      {/* FEES LIST */}
+      {!feesError && fees.length > 0 && (
         <div className="fees-section">
           <h3 className="section-label">
             <DollarSign

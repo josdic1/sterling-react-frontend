@@ -5,6 +5,7 @@ import { useNavigate } from "react-router-dom";
 import { ReservationList } from "../components/reservations/ReservationList";
 import { MemberList } from "../components/members/MemberList";
 import { Plus } from "lucide-react";
+import { TutorialModal } from "../components/shared/TutorialModal";
 
 export function HomePage() {
   const { user, loading: authLoading } = useAuth();
@@ -36,13 +37,14 @@ export function HomePage() {
       </section>
 
       {/* Floating Action Button for Mobile */}
-      <button 
-        className="fab" 
-        onClick={() => navigate('/reservations/new')}
+      <button
+        className="fab"
+        onClick={() => navigate("/reservations/new")}
         title="New Booking"
       >
         <Plus size={24} />
       </button>
+      <TutorialModal autoStart={true} />
     </div>
   );
 }
