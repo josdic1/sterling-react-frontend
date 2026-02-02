@@ -1,8 +1,7 @@
-// src/providers/DataProvider.jsx
+// src/providers/DataProvider.jsx - PRODUCTION VERSION (NO CONSOLE.LOG)
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { DataContext } from "../contexts/DataContext";
 import { AuthContext } from "../contexts/AuthContext";
-// IMPORT retryRequest
 import { api, retryRequest } from "../utils/api";
 
 export function DataProvider({ children }) {
@@ -17,7 +16,6 @@ export function DataProvider({ children }) {
 
   const fetchReservationById = useCallback(async (id) => {
     try {
-      // Wrapped in retryRequest
       const data = await retryRequest(() => api.get(`/reservations/${id}`));
 
       setReservations((prev) =>
@@ -34,7 +32,6 @@ export function DataProvider({ children }) {
 
   const createReservation = useCallback(async (newRes) => {
     try {
-      // Typically we DO NOT retry POST requests (to avoid duplicates)
       const data = await api.post("/reservations/", newRes);
       setReservations((prev) => [...prev, data]);
       return data;
@@ -70,7 +67,6 @@ export function DataProvider({ children }) {
 
   const fetchAttendees = useCallback(async (resId) => {
     try {
-      // Reads are safe to retry
       const data = await retryRequest(() =>
         api.get(`/reservations/${resId}/attendees/`),
       );
@@ -177,7 +173,7 @@ export function DataProvider({ children }) {
         const age = Date.now() - parseInt(cacheTime);
         if (age < 5 * 60 * 1000) {
           try {
-            console.log("Loading from cache...");
+            // REMOVED: console.log("Loading from cache...");
             const parsed = JSON.parse(cachedData);
             setDiningRooms(parsed.rooms || []);
             setReservations(parsed.reservations || []);
@@ -193,7 +189,6 @@ export function DataProvider({ children }) {
       // 2. Fetch Fresh Data (WITH RETRY)
       setLoading(true);
       try {
-        // We use retryRequest here so the initial app load is robust
         const [roomsData, resData, memData] = await Promise.all([
           retryRequest(() => api.get("/dining-rooms/")),
           retryRequest(() => api.get("/reservations/")),
@@ -216,7 +211,6 @@ export function DataProvider({ children }) {
         localStorage.setItem(`${cacheKey}_time`, String(Date.now()));
       } catch (err) {
         console.error("loadAll failed after retries:", err);
-        // Here you might trigger a global toast error
       } finally {
         setLoading(false);
       }

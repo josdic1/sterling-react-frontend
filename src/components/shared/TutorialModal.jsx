@@ -1,141 +1,207 @@
 // src/components/shared/TutorialModal.jsx
 import { useState, useEffect } from "react";
-import { X, ChevronLeft, ChevronRight, Check } from "lucide-react";
+import { X, ChevronRight, ChevronLeft, Check } from "lucide-react";
 
-const TUTORIAL_STEPS = [
+const tutorialSteps = [
   {
     id: 1,
-    title: "Welcome to Sterling Club!",
-    content:
-      "This quick tour will show you how to make reservations and manage your account. Take your time - you can restart this tutorial anytime from the Help menu.",
-    image: "🏛️",
-    tip: "Click Next to continue",
+    emoji: "🏛️",
+    title: "Welcome to Sterling!",
+    description:
+      "This quick tour will help you understand how to use the system. Look for color-coded elements throughout the app!",
+    visual: {
+      title: "Color Guide",
+      items: [
+        {
+          color: "red",
+          label: "Reservation Cards",
+          desc: "Your upcoming bookings with date, time, and location",
+        },
+        {
+          color: "blue",
+          label: "Navigation Icons",
+          desc: "Home, Calendar, Family, Rules, and Help buttons",
+        },
+        {
+          color: "green",
+          label: "Success Messages",
+          desc: "Confirmations when you save or complete actions",
+        },
+        {
+          color: "grey",
+          label: "Tables & Lists",
+          desc: "Your family members and booking details",
+        },
+      ],
+    },
   },
   {
     id: 2,
-    title: "Step 1: View Your Dashboard",
-    content:
-      "When you log in, you'll see your dashboard. This shows your upcoming reservations and quick actions.",
-    whatToLook: [
-      "Your upcoming reservations at the top",
-      "Quick action buttons to make a new reservation",
-      "Navigation menu to access different sections",
-    ],
-    image: "🏠",
+    emoji: "📅",
+    title: "Making a Reservation",
+    description:
+      "Click the Calendar icon in the top navigation or the floating + button on mobile.",
+    section: {
+      title: "What to Look For",
+      items: [
+        "Date picker to select your preferred date",
+        "Meal type selection (Lunch or Dinner)",
+        "Room selection from available locations",
+        "Time slot picker based on meal type",
+        "Notes field for special requests",
+      ],
+    },
   },
   {
     id: 3,
-    title: "Step 2: Make a Reservation",
-    content:
-      "To book a table, click the 'New Reservation' button. You'll be guided through a simple form.",
-    steps: [
-      "Choose your date from the calendar",
-      "Pick your preferred dining room",
-      "Select a time that works for you",
-      "Tell us how many people are coming",
-      "Add your guests from your member list",
-    ],
-    image: "📅",
+    emoji: "👨‍👩‍👧‍👦",
+    title: "Managing Family Members",
+    description:
+      "Add your family members so you can quickly add them to reservations.",
+    section: {
+      title: "What to Look For",
+      items: [
+        'Click "Family" icon in navigation',
+        "Add member names and relationships",
+        "Include dietary restrictions",
+        "Quick-add buttons appear when making reservations",
+      ],
+    },
   },
   {
     id: 4,
-    title: "Step 3: Managing Your Members",
-    content:
-      "Before making reservations, add your family and friends to your member list. This makes booking faster!",
-    whatToLook: [
-      "Go to 'Members' in the navigation",
-      "Click 'Add Member'",
-      "Enter their name and relationship (Spouse, Child, Friend, etc.)",
-      "Save - they're now in your list!",
-    ],
-    image: "👨‍👩‍👧‍👦",
-    tip: "You only need to add members once - they'll always be available for future reservations",
+    emoji: "💰",
+    title: "Understanding Fees",
+    description:
+      "Some reservations may have automatic fees based on club rules.",
+    section: {
+      title: "Common Fees",
+      items: [
+        "Weekend/Peak Hours surcharge",
+        "Large party fees (over 8 guests)",
+        "Excess guest fees beyond member allowance",
+        "All fees shown before you confirm",
+      ],
+    },
   },
   {
     id: 5,
-    title: "Step 4: Understanding Fees",
-    content:
-      "Some reservations have additional fees based on club rules. You'll always see the total before confirming.",
-    whatToLook: [
-      "Large party fees (8+ guests)",
-      "Peak hours surcharges (Friday/Saturday evenings)",
-      "Cancellation policies",
-    ],
-    image: "💰",
-    tip: "Check the 'Rules' page to see all fees",
+    emoji: "📋",
+    title: "Viewing Your Reservations",
+    description:
+      "Your reservations appear as color-coded cards on the homepage.",
+    visual: {
+      title: "Reading Reservation Cards",
+      items: [
+        {
+          color: "red",
+          label: "Date Block (Left)",
+          desc: "Month and day in large numbers",
+        },
+        {
+          color: "grey",
+          label: "Details (Middle)",
+          desc: "Time, room name, notes, guest count",
+        },
+        {
+          color: "red",
+          label: "Delete Button (Right)",
+          desc: "Trash icon to cancel booking",
+        },
+      ],
+    },
   },
   {
     id: 6,
-    title: "Step 5: Viewing Your Reservations",
-    content:
-      "Click on any reservation to see full details, add notes, or make changes.",
-    whatToLook: [
-      "Date, time, and location",
-      "Who's attending",
-      "Any fees applied",
-      "Option to edit or cancel",
-    ],
-    image: "📋",
-    tip: "You can cancel up to 48 hours before without penalty",
+    emoji: "🔍",
+    title: "Reservation Details",
+    description:
+      "Click any reservation card to see full details and manage guests.",
+    section: {
+      title: "On the Detail Page",
+      items: [
+        "Edit button (pencil icon) - Modify time/date/room",
+        "Current guest list with dietary restrictions",
+        "Quick-add buttons for family members",
+        "Add guest form for non-family attendees",
+        "Applied fees and total charges",
+      ],
+    },
   },
   {
     id: 7,
-    title: "Need Help?",
-    content: "If you ever get stuck, don't worry! We're here to help.",
-    steps: [
-      "Click the '?' icon in the navigation to restart this tutorial",
-      "Call the club at (555) 123-4567",
-      "Email support@sterlingclub.com",
-      "Visit us during office hours: Mon-Fri 9am-5pm",
-    ],
-    image: "💁",
-    tip: "You're all set! Click 'Get Started' to begin using the app.",
+    emoji: "💁",
+    title: "Getting Help",
+    description:
+      "You can always return to this tutorial by clicking the Help button.",
+    section: {
+      title: "Where to Find Help",
+      items: [
+        "Help button (?) in top right navigation",
+        "Hover over navigation icons for tooltips",
+        "Check Rules page for club policies",
+        "All changes save automatically",
+      ],
+    },
+    tip: "Pro Tip: Your data is cached for faster loading. Refresh the page if you need the latest information from other users.",
   },
 ];
 
-export function TutorialModal({ onClose, autoStart = false }) {
+export function TutorialModal({ autoStart = false, onClose }) {
+  const [isOpen, setIsOpen] = useState(false);
   const [currentStep, setCurrentStep] = useState(0);
-  const [show, setShow] = useState(false);
 
   useEffect(() => {
-    // Check if user has seen tutorial
-    const hasSeenTutorial = localStorage.getItem("sterling_tutorial_seen");
-    if (autoStart && !hasSeenTutorial) {
-      setShow(true);
+    if (autoStart) {
+      const hasSeenTutorial = localStorage.getItem("sterling_tutorial_seen");
+      if (!hasSeenTutorial) {
+        setIsOpen(true);
+      }
     }
   }, [autoStart]);
 
-  const step = TUTORIAL_STEPS[currentStep];
-  const isFirstStep = currentStep === 0;
-  const isLastStep = currentStep === TUTORIAL_STEPS.length - 1;
+  const handleClose = () => {
+    localStorage.setItem("sterling_tutorial_seen", "true");
+    setIsOpen(false);
+    if (onClose) onClose();
+  };
 
   const handleNext = () => {
-    if (isLastStep) {
-      handleClose();
-    } else {
+    if (currentStep < tutorialSteps.length - 1) {
       setCurrentStep(currentStep + 1);
+    } else {
+      handleClose();
     }
   };
 
-  const handlePrevious = () => {
-    if (!isFirstStep) {
+  const handlePrev = () => {
+    if (currentStep > 0) {
       setCurrentStep(currentStep - 1);
     }
   };
 
-  const handleClose = () => {
-    localStorage.setItem("sterling_tutorial_seen", "true");
-    setShow(false);
-    if (onClose) onClose();
+  const handleDotClick = (index) => {
+    setCurrentStep(index);
   };
 
-  const handleSkip = () => {
-    localStorage.setItem("sterling_tutorial_seen", "true");
-    setShow(false);
-    if (onClose) onClose();
-  };
+  // Allow external trigger
+  useEffect(() => {
+    const handleOpenTutorial = () => {
+      setIsOpen(true);
+      setCurrentStep(0);
+    };
 
-  if (!show) return null;
+    window.openTutorial = handleOpenTutorial;
+
+    return () => {
+      delete window.openTutorial;
+    };
+  }, []);
+
+  if (!isOpen) return null;
+
+  const step = tutorialSteps[currentStep];
+  const progress = ((currentStep + 1) / tutorialSteps.length) * 100;
 
   return (
     <div className="tutorial-overlay">
@@ -144,21 +210,19 @@ export function TutorialModal({ onClose, autoStart = false }) {
         <div className="tutorial-header">
           <div className="tutorial-progress">
             <span className="tutorial-step-counter">
-              Step {currentStep + 1} of {TUTORIAL_STEPS.length}
+              Step {currentStep + 1} of {tutorialSteps.length}
             </span>
             <div className="tutorial-progress-bar">
               <div
                 className="tutorial-progress-fill"
-                style={{
-                  width: `${((currentStep + 1) / TUTORIAL_STEPS.length) * 100}%`,
-                }}
+                style={{ width: `${progress}%` }}
               />
             </div>
           </div>
           <button
-            onClick={handleSkip}
+            onClick={handleClose}
             className="tutorial-skip-btn"
-            title="Skip tutorial"
+            title="Skip Tutorial"
           >
             <X size={20} />
           </button>
@@ -166,17 +230,50 @@ export function TutorialModal({ onClose, autoStart = false }) {
 
         {/* Content */}
         <div className="tutorial-content">
-          <div className="tutorial-emoji">{step.image}</div>
+          <div className="tutorial-emoji">{step.emoji}</div>
           <h2>{step.title}</h2>
-          <p className="tutorial-description">{step.content}</p>
+          <p className="tutorial-description">{step.description}</p>
 
-          {/* What to Look For */}
-          {step.whatToLook && (
+          {/* Visual Guide with Color-Coded Examples */}
+          {step.visual && (
+            <div className="tutorial-visual-guide">
+              <h3>{step.visual.title}</h3>
+              <div className="tutorial-legend">
+                {step.visual.items.map((item, index) => (
+                  <div
+                    key={index}
+                    className={`tutorial-legend-item color-${item.color}`}
+                  >
+                    <div
+                      className="tutorial-legend-color"
+                      style={{
+                        background:
+                          item.color === "red"
+                            ? "#eb5638"
+                            : item.color === "blue"
+                              ? "#3b82f6"
+                              : item.color === "green"
+                                ? "#10b981"
+                                : "#757575",
+                      }}
+                    />
+                    <div className="tutorial-legend-text">
+                      <div className="tutorial-legend-label">{item.label}</div>
+                      <div className="tutorial-legend-desc">{item.desc}</div>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Section with bullet points */}
+          {step.section && (
             <div className="tutorial-section">
-              <h3>What to Look For:</h3>
+              <h3>{step.section.title}</h3>
               <ul className="tutorial-list">
-                {step.whatToLook.map((item, idx) => (
-                  <li key={idx}>
+                {step.section.items.map((item, index) => (
+                  <li key={index}>
                     <Check size={16} className="tutorial-check" />
                     <span>{item}</span>
                   </li>
@@ -185,22 +282,10 @@ export function TutorialModal({ onClose, autoStart = false }) {
             </div>
           )}
 
-          {/* Steps */}
-          {step.steps && (
-            <div className="tutorial-section">
-              <h3>How to Do It:</h3>
-              <ol className="tutorial-ordered-list">
-                {step.steps.map((item, idx) => (
-                  <li key={idx}>{item}</li>
-                ))}
-              </ol>
-            </div>
-          )}
-
           {/* Tip */}
           {step.tip && (
             <div className="tutorial-tip">
-              <strong>💡 Tip:</strong> {step.tip}
+              <strong>💡 {step.tip}</strong>
             </div>
           )}
         </div>
@@ -208,21 +293,21 @@ export function TutorialModal({ onClose, autoStart = false }) {
         {/* Footer */}
         <div className="tutorial-footer">
           <button
-            onClick={handlePrevious}
-            disabled={isFirstStep}
+            onClick={handlePrev}
+            disabled={currentStep === 0}
             className="tutorial-btn tutorial-btn-secondary"
           >
-            <ChevronLeft size={20} />
-            Previous
+            <ChevronLeft size={16} />
+            <span>Back</span>
           </button>
 
           <div className="tutorial-dots">
-            {TUTORIAL_STEPS.map((_, idx) => (
+            {tutorialSteps.map((_, index) => (
               <button
-                key={idx}
-                onClick={() => setCurrentStep(idx)}
-                className={`tutorial-dot ${idx === currentStep ? "active" : ""}`}
-                aria-label={`Go to step ${idx + 1}`}
+                key={index}
+                onClick={() => handleDotClick(index)}
+                className={`tutorial-dot ${index === currentStep ? "active" : ""}`}
+                aria-label={`Go to step ${index + 1}`}
               />
             ))}
           </div>
@@ -231,45 +316,19 @@ export function TutorialModal({ onClose, autoStart = false }) {
             onClick={handleNext}
             className="tutorial-btn tutorial-btn-primary"
           >
-            {isLastStep ? (
-              <>
-                Get Started
-                <Check size={20} />
-              </>
+            <span>
+              {currentStep === tutorialSteps.length - 1
+                ? "Get Started"
+                : "Next"}
+            </span>
+            {currentStep === tutorialSteps.length - 1 ? (
+              <Check size={16} />
             ) : (
-              <>
-                Next
-                <ChevronRight size={20} />
-              </>
+              <ChevronRight size={16} />
             )}
           </button>
         </div>
       </div>
     </div>
-  );
-}
-
-// Quick help component for navbar
-export function HelpButton() {
-  const [showTutorial, setShowTutorial] = useState(false);
-
-  return (
-    <>
-      <button
-        onClick={() => setShowTutorial(true)}
-        className="help-btn"
-        title="Need help? Click for tutorial"
-      >
-        <span className="help-icon">?</span>
-        <span className="help-text">Help</span>
-      </button>
-
-      {showTutorial && (
-        <TutorialModal
-          onClose={() => setShowTutorial(false)}
-          autoStart={false}
-        />
-      )}
-    </>
   );
 }

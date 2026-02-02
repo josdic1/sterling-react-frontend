@@ -1,4 +1,4 @@
-/* src/index.css */
+/* src/index.css - PRODUCTION READY */
 
 /* ==================== CSS VARIABLES ==================== */
 :root {
@@ -97,7 +97,7 @@ body {
 
 .nav-links {
   display: flex;
-  gap: 1.5rem;
+  gap: clamp(0.75rem, 3vw, 2rem);
   align-items: center;
   justify-self: center;
 }
@@ -458,14 +458,37 @@ button:active {
   }
 }
 
+/* CRITICAL: Reservation Card Layout - DO NOT REMOVE DISPLAY GRID */
+.reservation-item {
+  background: white;
+  border: 1px solid var(--border-color);
+  border-left: 4px solid var(--banking-black);
+  padding: 0;
+  cursor: pointer;
+  transition: all 0.2s;
+  display: grid;
+  grid-template-columns: 80px 1fr 50px;
+  gap: 0;
+  overflow: hidden;
+  position: relative;
+}
+
 @media (max-width: 767px) {
   .reservation-item {
-    padding: 0.5rem; /* Add padding on mobile */
-    min-height: 88px; /* Ensure touch-friendly height */
+    grid-template-columns: 70px 1fr 45px;
+    min-height: 88px;
   }
 
   .res-content {
-    padding: 1rem; /* Increase internal padding */
+    padding: 0.75rem;
+  }
+  
+  .res-date-block {
+    padding: 0.75rem 0.25rem;
+  }
+  
+  .btn-delete-icon {
+    width: 45px;
   }
 }
 
@@ -580,6 +603,7 @@ button:active {
   color: white;
   transform: none;
 }
+
 /* ==================== FORMS ==================== */
 .banking-form {
   max-width: 100%;
@@ -836,8 +860,7 @@ button:active {
   transform: none;
 }
 
-/* ==================== SAVE FLOATER (UPDATED) ==================== */
-/* ==================== SAVE FLOATER (UPDATED) ==================== */
+/* ==================== SAVE FLOATER ==================== */
 .save-floater {
   position: fixed;
   bottom: 0;
@@ -847,11 +870,11 @@ button:active {
   color: white;
   box-shadow: 0 -4px 12px rgba(0, 0, 0, 0.2);
   z-index: 999;
-  animation: slideUp 0.3s ease-out;
+  animation: slideUpFloater 0.3s ease-out;
   overflow: hidden;
 }
 
-@keyframes slideUp {
+@keyframes slideUpFloater {
   from {
     transform: translateY(100%);
   }
@@ -1428,7 +1451,6 @@ button:active {
   opacity: 1;
 }
 
-/* Arrow for tooltip */
 .nav-link-with-tooltip::before {
   content: "";
   position: absolute;
@@ -1447,8 +1469,6 @@ button:active {
   opacity: 1;
 }
 
-/* Tutorial Modal Styles - Add to index.css */
-
 /* ==================== TUTORIAL MODAL ==================== */
 .tutorial-overlay {
   position: fixed;
@@ -1463,26 +1483,22 @@ button:active {
 }
 
 @keyframes fadeIn {
-  from {
-    opacity: 0;
-  }
-  to {
-    opacity: 1;
-  }
+  from { opacity: 0; }
+  to { opacity: 1; }
 }
 
 .tutorial-modal {
   background: white;
   border: 2px solid var(--banking-black);
-  max-width: 600px;
+  max-width: 700px;
   width: 100%;
   max-height: 90vh;
   display: flex;
   flex-direction: column;
-  animation: slideUp 0.3s ease-out;
+  animation: tutorialSlideUp 0.3s ease-out;
 }
 
-@keyframes slideUp {
+@keyframes tutorialSlideUp {
   from {
     transform: translateY(50px);
     opacity: 0;
@@ -1493,7 +1509,6 @@ button:active {
   }
 }
 
-/* Header */
 .tutorial-header {
   display: flex;
   align-items: center;
@@ -1544,7 +1559,6 @@ button:active {
   transform: none;
 }
 
-/* Content */
 .tutorial-content {
   padding: 2rem;
   overflow-y: auto;
@@ -1570,6 +1584,78 @@ button:active {
   color: var(--banking-grey);
   margin-bottom: 1.5rem;
   text-align: center;
+}
+
+.tutorial-visual-guide {
+  margin: 2rem 0;
+  padding: 1.5rem;
+  background: var(--off-white);
+  border: 2px solid var(--border-color);
+  border-radius: 4px;
+}
+
+.tutorial-visual-guide h3 {
+  font-size: 0.9rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin: 0 0 1rem 0;
+  color: var(--banking-black);
+  text-align: center;
+}
+
+.tutorial-legend {
+  display: grid;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.tutorial-legend-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.75rem;
+  background: white;
+  border-left: 4px solid;
+}
+
+.tutorial-legend-item.color-red {
+  border-left-color: var(--sterling-accent);
+}
+
+.tutorial-legend-item.color-blue {
+  border-left-color: var(--info-blue);
+}
+
+.tutorial-legend-item.color-green {
+  border-left-color: var(--success-green);
+}
+
+.tutorial-legend-item.color-grey {
+  border-left-color: var(--banking-grey);
+}
+
+.tutorial-legend-color {
+  width: 40px;
+  height: 40px;
+  border-radius: 4px;
+  flex-shrink: 0;
+}
+
+.tutorial-legend-text {
+  flex: 1;
+}
+
+.tutorial-legend-label {
+  font-size: 0.85rem;
+  font-weight: 700;
+  color: var(--banking-black);
+  margin-bottom: 0.25rem;
+}
+
+.tutorial-legend-desc {
+  font-size: 0.75rem;
+  color: var(--banking-grey);
 }
 
 .tutorial-section {
@@ -1634,7 +1720,6 @@ button:active {
   color: var(--banking-black);
 }
 
-/* Footer */
 .tutorial-footer {
   display: flex;
   align-items: center;
@@ -1687,7 +1772,6 @@ button:active {
   pointer-events: none;
 }
 
-/* Progress Dots */
 .tutorial-dots {
   display: flex;
   gap: 0.5rem;
@@ -1716,7 +1800,6 @@ button:active {
   background: var(--sterling-accent);
 }
 
-/* Help Button in Nav */
 .help-btn {
   display: flex;
   align-items: center;
@@ -1756,7 +1839,7 @@ button:active {
   letter-spacing: 0.1em;
 }
 
-/* Mobile Responsive */
+/* ==================== MOBILE OPTIMIZATIONS ==================== */
 @media (max-width: 767px) {
   .tutorial-modal {
     max-width: 100%;
@@ -1804,46 +1887,36 @@ button:active {
     height: 40px;
     justify-content: center;
   }
-}
 
-/* Large text mode for accessibility */
-@media (prefers-reduced-motion: reduce) {
-  .tutorial-modal {
-    animation: none;
-  }
-
-  .tutorial-overlay {
-    animation: none;
-  }
-}
-
-@media (max-width: 767px) {
-  /* Bigger touch targets */
   button {
     min-height: 48px;
     padding: 1rem 1.5rem;
   }
   
-  /* Full-width buttons in forms */
   .btn-primary,
   .btn-secondary {
     width: 100%;
   }
   
-  /* Stack form rows */
   .form-row {
     flex-direction: column;
     gap: 1rem;
   }
   
-  /* Responsive tables */
-  .reservation-table {
+  .sterling-table {
     display: block;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
   
-  /* Hide desktop-only columns */
   .desktop-only {
     display: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .tutorial-modal,
+  .tutorial-overlay {
+    animation: none;
   }
 }
