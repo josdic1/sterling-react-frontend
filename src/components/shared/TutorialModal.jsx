@@ -1,4 +1,4 @@
-// src/components/shared/TutorialModal.jsx
+// src/components/shared/TutorialModal.jsx - COMPLETE FIXED VERSION
 import { useState, useEffect } from "react";
 import { X, ChevronRight, ChevronLeft, Check } from "lucide-react";
 
@@ -8,63 +8,66 @@ const tutorialSteps = [
     emoji: "🏛️",
     title: "Welcome to Sterling!",
     description:
-      "This quick tour will help you understand how to use the system. Look for color-coded elements throughout the app!",
+      "This quick tour will help you understand the app layout and color system.",
     visual: {
-      title: "Color Guide",
+      title: "COLOR GUIDE",
       items: [
         {
           color: "red",
-          label: "Reservation Cards",
-          desc: "Your upcoming bookings with date, time, and location",
-        },
-        {
-          color: "blue",
-          label: "Navigation Icons",
-          desc: "Home, Calendar, Family, Rules, and Help buttons",
-        },
-        {
-          color: "green",
-          label: "Success Messages",
-          desc: "Confirmations when you save or complete actions",
+          label: "RED/ORANGE Accent",
+          desc: "Reservation date blocks, Delete buttons, Hover effects, Active links",
         },
         {
           color: "grey",
-          label: "Tables & Lists",
-          desc: "Your family members and booking details",
+          label: "BLACK/GREY Text",
+          desc: "Navigation links (before hover), Table text, Guest details, All main content",
+        },
+        {
+          color: "green",
+          label: "GREEN Success",
+          desc: "Success messages, Checkmarks, Confirmation notifications",
+        },
+        {
+          color: "blue",
+          label: "BLUE Info (Rare)",
+          desc: "Info messages only - not used in main navigation",
         },
       ],
     },
+    tip: "💡 TIP: The red/orange accent color (#EB5638) is your primary action color throughout the app!",
   },
   {
     id: 2,
     emoji: "📅",
     title: "Making a Reservation",
     description:
-      "Click the Calendar icon in the top navigation or the floating + button on mobile.",
+      "Click the CALENDAR icon (📅) in the top navigation, or use the floating RED + button on mobile.",
     section: {
-      title: "What to Look For",
+      title: "Booking Process",
       items: [
-        "Date picker to select your preferred date",
-        "Meal type selection (Lunch or Dinner)",
-        "Room selection from available locations",
-        "Time slot picker based on meal type",
-        "Notes field for special requests",
+        "1. Select your date from the calendar",
+        "2. Choose meal type: LUNCH (11 AM-2 PM) or DINNER (4 PM-7 PM)",
+        "3. Pick your preferred dining room",
+        "4. Select start and end times",
+        "5. Add optional notes for special requests",
+        "6. Click SAVE to confirm your booking",
       ],
     },
   },
   {
     id: 3,
     emoji: "👨‍👩‍👧‍👦",
-    title: "Managing Family Members",
+    title: "Managing Your Family",
     description:
-      "Add your family members so you can quickly add them to reservations.",
+      "Add family members to quickly include them in reservations. Click the USERS icon (👥) in navigation.",
     section: {
-      title: "What to Look For",
+      title: "Family Management",
       items: [
-        'Click "Family" icon in navigation',
-        "Add member names and relationships",
-        "Include dietary restrictions",
-        "Quick-add buttons appear when making reservations",
+        'Click "+ Add Member" to create new family records',
+        'Enter name, relationship (e.g., "Son", "Daughter")',
+        'Add dietary restrictions (e.g., "Vegetarian", "Nut Allergy")',
+        "Family members appear as quick-add buttons when making reservations",
+        "Edit or archive members anytime from the Family page",
       ],
     },
   },
@@ -73,77 +76,81 @@ const tutorialSteps = [
     emoji: "💰",
     title: "Understanding Fees",
     description:
-      "Some reservations may have automatic fees based on club rules.",
+      "Some reservations automatically apply fees based on club rules. Click RULES icon (📋) to see all policies.",
     section: {
-      title: "Common Fees",
+      title: "Common Automatic Fees",
       items: [
-        "Weekend/Peak Hours surcharge",
-        "Large party fees (over 8 guests)",
-        "Excess guest fees beyond member allowance",
-        "All fees shown before you confirm",
+        "Peak Hours: Friday-Sunday reservations may have surcharges",
+        "Large Party: Groups over 8 guests may incur additional fees",
+        "Excess Guests: Beyond your member guest allowance",
+        "All fees are calculated and shown BEFORE you confirm",
+        "Fees appear on the reservation detail page",
       ],
     },
   },
   {
     id: 5,
     emoji: "📋",
-    title: "Viewing Your Reservations",
+    title: "Reading Reservation Cards",
     description:
-      "Your reservations appear as color-coded cards on the homepage.",
+      "Your reservations appear as cards on the homepage with a 3-section layout.",
     visual: {
-      title: "Reading Reservation Cards",
+      title: "CARD STRUCTURE (LEFT → MIDDLE → RIGHT)",
       items: [
         {
           color: "red",
-          label: "Date Block (Left)",
-          desc: "Month and day in large numbers",
+          label: "LEFT: Date Block",
+          desc: "Month (small red text) + Day (large black number) in grey box",
         },
         {
           color: "grey",
-          label: "Details (Middle)",
-          desc: "Time, room name, notes, guest count",
+          label: "MIDDLE: Details",
+          desc: "Time, Room name (CAPS), Notes (italic), Guest count with icon",
         },
         {
           color: "red",
-          label: "Delete Button (Right)",
-          desc: "Trash icon to cancel booking",
+          label: "RIGHT: Delete Icon",
+          desc: "Trash can button - turns red on hover to confirm deletion",
         },
       ],
     },
+    tip: "💡 Click anywhere on a card to see full details and manage guests!",
   },
   {
     id: 6,
     emoji: "🔍",
-    title: "Reservation Details",
+    title: "Reservation Detail Page",
     description:
-      "Click any reservation card to see full details and manage guests.",
+      "Click any card to open the detail view where you can edit and manage guests.",
     section: {
-      title: "On the Detail Page",
+      title: "Available Actions",
       items: [
-        "Edit button (pencil icon) - Modify time/date/room",
-        "Current guest list with dietary restrictions",
-        "Quick-add buttons for family members",
-        "Add guest form for non-family attendees",
-        "Applied fees and total charges",
+        "EDIT (pencil icon) - Modify date, time, room, or notes",
+        "View current guest list with dietary restrictions",
+        "QUICK-ADD buttons for your family members",
+        "Manual ADD GUEST form for non-family attendees",
+        "Applied fees section showing all charges",
+        "DELETE button (trash icon) to cancel entire reservation",
       ],
     },
   },
   {
     id: 7,
     emoji: "💁",
-    title: "Getting Help",
+    title: "Navigation & Help",
     description:
-      "You can always return to this tutorial by clicking the Help button.",
+      "The navigation bar at the top has all your main tools. Hover over icons to see labels!",
     section: {
-      title: "Where to Find Help",
+      title: "Top Navigation Icons (Left to Right)",
       items: [
-        "Help button (?) in top right navigation",
-        "Hover over navigation icons for tooltips",
-        "Check Rules page for club policies",
-        "All changes save automatically",
+        "🏠 HOME - Dashboard with all your reservations",
+        "📅 CALENDAR - Create new reservation",
+        "👥 USERS - Manage family members",
+        "📋 RULES - View club policies and fees",
+        "❓ HELP (right side) - Reopens this tutorial anytime",
       ],
     },
-    tip: "Pro Tip: Your data is cached for faster loading. Refresh the page if you need the latest information from other users.",
+    tip: "💡 Your data is cached for 5 minutes to make the app load faster. Refresh the page (F5) to get the latest updates from other users!",
   },
 ];
 
@@ -184,7 +191,7 @@ export function TutorialModal({ autoStart = false, onClose }) {
     setCurrentStep(index);
   };
 
-  // Allow external trigger
+  // Allow external trigger from Help button
   useEffect(() => {
     const handleOpenTutorial = () => {
       setIsOpen(true);
@@ -285,7 +292,7 @@ export function TutorialModal({ autoStart = false, onClose }) {
           {/* Tip */}
           {step.tip && (
             <div className="tutorial-tip">
-              <strong>💡 {step.tip}</strong>
+              <strong>{step.tip}</strong>
             </div>
           )}
         </div>

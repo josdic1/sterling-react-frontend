@@ -162,7 +162,7 @@ export function ReservationForm() {
           isEditMode ? "Reservation updated" : "Reservation created",
           "success",
         );
-        navigate("/reservations");
+        navigate("/");
       } else {
         addToast("Failed to save reservation. Check availability.", "error");
       }

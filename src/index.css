@@ -482,11 +482,11 @@ button:active {
   .res-content {
     padding: 0.75rem;
   }
-  
+
   .res-date-block {
     padding: 0.75rem 0.25rem;
   }
-  
+
   .btn-delete-icon {
     width: 45px;
   }
@@ -1483,8 +1483,12 @@ button:active {
 }
 
 @keyframes fadeIn {
-  from { opacity: 0; }
-  to { opacity: 1; }
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
 }
 
 .tutorial-modal {
@@ -1892,23 +1896,23 @@ button:active {
     min-height: 48px;
     padding: 1rem 1.5rem;
   }
-  
+
   .btn-primary,
   .btn-secondary {
     width: 100%;
   }
-  
+
   .form-row {
     flex-direction: column;
     gap: 1rem;
   }
-  
+
   .sterling-table {
     display: block;
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
   }
-  
+
   .desktop-only {
     display: none;
   }
