@@ -13,6 +13,25 @@ const MEAL_DEFAULTS = {
   event: { start: "18:00", end: "22:00" },
 };
 
+/* ------------------ TIME HELPERS ------------------ */
+
+const snapTo15 = (time) => {
+  if (!time) return "";
+  const [h, m] = time.split(":").map(Number);
+  const snapped = Math.round(m / 15) * 15;
+  const hour = h + (snapped === 60 ? 1 : 0);
+  const minute = snapped === 60 ? 0 : snapped;
+  return `${String(hour).padStart(2, "0")}:${String(minute).padStart(2, "0")}`;
+};
+
+const minutesBetween = (start, end) => {
+  const [sh, sm] = start.split(":").map(Number);
+  const [eh, em] = end.split(":").map(Number);
+  return eh * 60 + em - (sh * 60 + sm);
+};
+
+/* ------------------ COMPONENT ------------------ */
+
 export function ReservationForm() {
   const { id } = useParams();
   const navigate = useNavigate();
@@ -26,6 +45,7 @@ export function ReservationForm() {
     : null;
 
   const today = new Date().toISOString().slice(0, 10);
+  const nowTime = new Date().toTimeString().slice(0, 5);
 
   const [formData, setFormData] = useState({
     dining_room_id: "",
@@ -40,6 +60,7 @@ export function ReservationForm() {
   const [draftLoaded, setDraftLoaded] = useState(false);
 
   /* ---------- LOAD EDIT OR DRAFT ---------- */
+
   useEffect(() => {
     if (isEditMode && existingReservation) {
       setFormData({
@@ -55,215 +76,187 @@ export function ReservationForm() {
 
     if (!isEditMode) {
       const draft = localStorage.getItem("reservation_draft");
-      if (draft) {
-        try {
-          const parsed = JSON.parse(draft);
-          if (parsed.date || parsed.notes || parsed.dining_room_id) {
-            if (
-              window.confirm(
-                "Found an unsaved reservation draft. Would you like to resume?",
-              )
-            ) {
-              setFormData(parsed);
-              setDraftLoaded(true);
-              addToast("Draft restored successfully", "success");
-            } else {
-              localStorage.removeItem("reservation_draft");
-            }
+      if (!draft) return;
+
+      try {
+        const parsed = JSON.parse(draft);
+        if (parsed.date || parsed.notes || parsed.dining_room_id) {
+          if (window.confirm("Resume unsaved reservation draft?")) {
+            setFormData(parsed);
+            setDraftLoaded(true);
+            addToast("Draft restored", "success");
+          } else {
+            localStorage.removeItem("reservation_draft");
           }
-        } catch (e) {
-          localStorage.removeItem("reservation_draft");
         }
+      } catch {
+        localStorage.removeItem("reservation_draft");
       }
     }
   }, [isEditMode, existingReservation, addToast]);
 
-  /* ---------- AUTOFILL DEFAULT TIMES ON MEAL CHANGE ---------- */
+  /* ---------- AUTO-SET TIMES ON MEAL CHANGE ---------- */
+
   useEffect(() => {
     if (isEditMode || draftLoaded) return;
 
-    const defaults = MEAL_DEFAULTS[formData.meal_type] || {
-      start: "",
-      end: "",
-    };
+    const defaults = MEAL_DEFAULTS[formData.meal_type];
+    if (!defaults) return;
 
     setFormData((prev) => ({
       ...prev,
-      start_time: defaults.start,
-      end_time: defaults.end,
+      start_time: snapTo15(defaults.start),
+      end_time: snapTo15(defaults.end),
     }));
   }, [formData.meal_type, isEditMode, draftLoaded]);
 
-  /* ---------- AUTOSAVE (CREATE MODE ONLY) ---------- */
+  /* ---------- AUTOSAVE ---------- */
+
   useEffect(() => {
     if (isEditMode) return;
 
-    const saveInterval = setInterval(() => {
+    const interval = setInterval(() => {
       if (formData.date || formData.notes || formData.dining_room_id) {
         localStorage.setItem("reservation_draft", JSON.stringify(formData));
       }
     }, 5000);
 
-    return () => clearInterval(saveInterval);
+    return () => clearInterval(interval);
   }, [formData, isEditMode]);
+
+  /* ---------- CHANGE HANDLER ---------- */
 
   const onChange = (e) => {
     const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    setFormData((p) => ({ ...p, [name]: value }));
     if (formErrors[name]) {
-      setFormErrors((prev) => ({ ...prev, [name]: null }));
+      setFormErrors((p) => ({ ...p, [name]: null }));
     }
   };
 
+  /* ---------- CLEAR DRAFT ---------- */
+
   const clearDraft = () => {
-    if (window.confirm("Are you sure you want to discard this draft?")) {
-      localStorage.removeItem("reservation_draft");
-      setFormData({
-        dining_room_id: "",
-        date: "",
-        meal_type: "dinner",
-        start_time: "",
-        end_time: "",
-        notes: "",
-      });
-      setDraftLoaded(false);
-      addToast("Draft discarded", "info");
-    }
+    if (!window.confirm("Discard draft?")) return;
+    localStorage.removeItem("reservation_draft");
+    setDraftLoaded(false);
+    setFormData({
+      dining_room_id: "",
+      date: "",
+      meal_type: "dinner",
+      start_time: "",
+      end_time: "",
+      notes: "",
+    });
+    addToast("Draft discarded", "info");
   };
+
+  /* ---------- VALIDATION ---------- */
 
   const validate = () => {
     const errors = {};
 
     if (!formData.dining_room_id)
-      errors.dining_room_id = "Dining Room is required";
-    if (!formData.date) errors.date = "Date is required";
-    if (!formData.start_time) errors.start_time = "Start time is required";
-    if (!formData.end_time) errors.end_time = "End time is required";
+      errors.dining_room_id = "Dining room required";
+    if (!formData.date) errors.date = "Date required";
+    if (!formData.start_time) errors.start_time = "Start time required";
+    if (!formData.end_time) errors.end_time = "End time required";
 
-    // Prevent past dates/times
-    if (formData.date) {
-      const selected = new Date(formData.date);
-      const now = new Date();
-      const todayDate = new Date(
-        now.getFullYear(),
-        now.getMonth(),
-        now.getDate(),
-      );
-
-      if (selected < todayDate) {
-        errors.date = "Cannot book past dates";
-      }
-
-      if (selected.getTime() === todayDate.getTime() && formData.start_time) {
-        const [h, m] = formData.start_time.split(":").map(Number);
-        const startDt = new Date(now);
-        startDt.setHours(h, m, 0, 0);
-        if (startDt <= now) {
-          errors.start_time = "Start time must be in the future";
-        }
-      }
+    if (
+      formData.date === today &&
+      formData.start_time &&
+      formData.start_time < nowTime
+    ) {
+      errors.start_time = "Cannot schedule in the past";
     }
 
-    // Time order & minimum duration
-    if (formData.start_time && formData.end_time) {
-      if (formData.start_time >= formData.end_time) {
-        errors.end_time = "End time must be after start time";
-      } else {
-        const [sh, sm] = formData.start_time.split(":").map(Number);
-        const [eh, em] = formData.end_time.split(":").map(Number);
-        const durationMins = eh * 60 + em - (sh * 60 + sm);
-        if (durationMins < 15) {
-          errors.end_time = "Reservation must be at least 15 minutes long";
-        }
-      }
+    if (
+      formData.start_time &&
+      formData.end_time &&
+      minutesBetween(formData.start_time, formData.end_time) < 15
+    ) {
+      errors.end_time = "Reservation must be at least 15 minutes";
+    }
+
+    if (
+      formData.start_time &&
+      formData.end_time &&
+      formData.start_time >= formData.end_time
+    ) {
+      errors.end_time = "End time must be after start time";
     }
 
     return errors;
   };
 
+  /* ---------- SUBMIT ---------- */
+
   const onSubmit = async (e) => {
     e.preventDefault();
 
     const errors = validate();
-    if (Object.keys(errors).length > 0) {
+    if (Object.keys(errors).length) {
       setFormErrors(errors);
       return;
     }
 
-    try {
-      const payload = {
-        ...formData,
-        dining_room_id: parseInt(formData.dining_room_id),
-      };
+    const payload = {
+      ...formData,
+      dining_room_id: parseInt(formData.dining_room_id),
+    };
 
-      const result = isEditMode
-        ? await updateReservation(parseInt(id), payload)
-        : await createReservation(payload);
+    const result = isEditMode
+      ? await updateReservation(parseInt(id), payload)
+      : await createReservation(payload);
 
-      if (result) {
-        if (!isEditMode) localStorage.removeItem("reservation_draft");
-        addToast(
-          isEditMode ? "Reservation updated" : "Reservation created",
-          "success",
-        );
-        navigate("/");
-      } else {
-        addToast("Failed to save reservation. Check availability.", "error");
-      }
-    } catch (err) {
-      console.error("Submit failed", err);
-      addToast("An error occurred", "error");
+    if (!result) {
+      addToast("Failed to save reservation", "error");
+      return;
     }
+
+    if (!isEditMode) localStorage.removeItem("reservation_draft");
+    addToast(
+      isEditMode ? "Reservation updated" : "Reservation created",
+      "success",
+    );
+    navigate("/");
   };
+
+  /* ---------- RENDER ---------- */
 
   return (
     <div className="container">
       <header className="page-header">
-        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <h1>{isEditMode ? "Edit Reservation" : "New Reservation"}</h1>
-          {!isEditMode && draftLoaded && (
-            <span className="badge-draft">Draft Restored</span>
-          )}
-        </div>
+        <h1>{isEditMode ? "Edit Reservation" : "New Reservation"}</h1>
 
-        <div style={{ display: "flex", gap: "10px" }}>
-          {!isEditMode &&
-            (formData.date || formData.notes || formData.dining_room_id) && (
-              <button
-                type="button"
-                onClick={clearDraft}
-                className="btn-secondary"
-                title="Discard Draft"
-              >
-                <RotateCcw size={16} style={{ marginRight: "5px" }} />
-                Reset
-              </button>
-            )}
-          <button
-            onClick={() => navigate("/reservations")}
-            className="btn-close"
-          >
-            <X size={20} />
+        {!isEditMode && draftLoaded && (
+          <span className="badge-draft">Draft</span>
+        )}
+
+        {!isEditMode && (formData.date || formData.notes) && (
+          <button onClick={clearDraft} className="btn-secondary">
+            <RotateCcw size={16} /> Reset
           </button>
-        </div>
+        )}
+
+        <button onClick={() => navigate("/reservations")} className="btn-close">
+          <X size={20} />
+        </button>
       </header>
 
       <form onSubmit={onSubmit} className="banking-form">
         <div className="form-grid">
-          {/* DINING ROOM */}
           <div className="input-group">
-            <label htmlFor="dining_room_id">Dining Room</label>
+            <label>Dining Room</label>
             <select
-              id="dining_room_id"
               name="dining_room_id"
               value={formData.dining_room_id}
               onChange={onChange}
-              className={formErrors.dining_room_id ? "input-error" : ""}
             >
               <option value="">-- Select Room --</option>
-              {diningRooms.map((room) => (
-                <option key={room.id} value={room.id}>
-                  {room.name} (Cap: {room.capacity})
+              {diningRooms.map((r) => (
+                <option key={r.id} value={r.id}>
+                  {r.name} (Cap {r.capacity})
                 </option>
               ))}
             </select>
@@ -274,11 +267,9 @@ export function ReservationForm() {
             )}
           </div>
 
-          {/* MEAL TYPE */}
           <div className="input-group">
-            <label htmlFor="meal_type">Meal Type</label>
+            <label>Meal Type</label>
             <select
-              id="meal_type"
               name="meal_type"
               value={formData.meal_type}
               onChange={onChange}
@@ -290,17 +281,14 @@ export function ReservationForm() {
             </select>
           </div>
 
-          {/* DATE */}
           <div className="input-group">
-            <label htmlFor="date">Date</label>
+            <label>Date</label>
             <input
               type="date"
-              id="date"
               name="date"
               min={today}
               value={formData.date}
               onChange={onChange}
-              className={formErrors.date ? "input-error" : ""}
             />
             {formErrors.date && (
               <div className="error-text">
@@ -309,73 +297,45 @@ export function ReservationForm() {
             )}
           </div>
 
-          {/* TIME ROW */}
           <div className="input-row">
             <div className="input-group">
-              <label htmlFor="start_time">Start Time</label>
+              <label>Start Time</label>
               <input
                 type="time"
-                id="start_time"
-                name="start_time"
                 step="900"
+                name="start_time"
                 value={formData.start_time}
                 onChange={onChange}
-                className={formErrors.start_time ? "input-error" : ""}
               />
-              {formErrors.start_time && (
-                <div className="error-text">
-                  <AlertCircle size={14} /> {formErrors.start_time}
-                </div>
-              )}
             </div>
             <div className="input-group">
-              <label htmlFor="end_time">End Time</label>
+              <label>End Time</label>
               <input
                 type="time"
-                id="end_time"
-                name="end_time"
                 step="900"
+                name="end_time"
                 value={formData.end_time}
                 onChange={onChange}
-                className={formErrors.end_time ? "input-error" : ""}
               />
-              {formErrors.end_time && (
-                <div className="error-text">
-                  <AlertCircle size={14} /> {formErrors.end_time}
-                </div>
-              )}
             </div>
           </div>
 
-          {/* NOTES */}
+          {formErrors.end_time && (
+            <div className="error-text">
+              <AlertCircle size={14} /> {formErrors.end_time}
+            </div>
+          )}
+
           <div className="input-group">
-            <label htmlFor="notes">Notes / Special Requests</label>
-            <textarea
-              id="notes"
-              name="notes"
-              value={formData.notes}
-              onChange={onChange}
-              rows="3"
-              placeholder="Allergies, seating preferences, etc."
-            />
+            <label>Notes</label>
+            <textarea name="notes" value={formData.notes} onChange={onChange} />
           </div>
         </div>
 
-        <div className="form-actions">
-          <button type="submit" className="btn-primary">
-            <Save size={18} style={{ marginRight: "8px" }} />
-            {isEditMode ? "Update Reservation" : "Confirm Booking"}
-          </button>
-        </div>
+        <button type="submit" className="btn-primary">
+          <Save size={18} /> {isEditMode ? "Update" : "Confirm"}
+        </button>
       </form>
-
-      {!isEditMode && (
-        <div className="autosave-indicator">
-          <small className="text-muted">
-            Form autosaves locally every 5 seconds.
-          </small>
-        </div>
-      )}
     </div>
   );
 }
