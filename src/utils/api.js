@@ -1,34 +1,18 @@
-// src/utils/api.js - Centralized API Configuration
+// src/utils/api.js - FIXED VERSION (Handles DELETE responses)
 
-/**
- * Get the API base URL from environment variables
- * Falls back to localhost in development if not set
- */
 export const getApiUrl = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
-
-  if (!apiUrl) {
-    // Only warn once in dev to avoid console spam, or keep it simple
-    return "http://localhost:8080";
-  }
-
+  if (!apiUrl) return "http://localhost:8080";
   return apiUrl;
 };
 
-/**
- * Build a full API endpoint URL
- * @param {string} path - API endpoint path (e.g., '/reservations')
- * @returns {string} Full URL
- */
 export const buildApiUrl = (path) => {
   const baseUrl = getApiUrl();
   const cleanPath = path.startsWith("/") ? path : `/${path}`;
   return `${baseUrl}${cleanPath}`;
 };
 
-/**
- * Fetch wrapper with timeout support (Default: 10 seconds)
- */
+// 1. TIMEOUT HELPER
 export const fetchWithTimeout = async (url, options = {}, timeout = 10000) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -49,11 +33,7 @@ export const fetchWithTimeout = async (url, options = {}, timeout = 10000) => {
   }
 };
 
-/**
- * Make an authenticated API request
- * Automatically includes JWT token from localStorage
- * Uses fetchWithTimeout for network safety
- */
+// 2. MAIN REQUEST FUNCTION (FIXED: Handles empty DELETE responses)
 export const apiRequest = async (path, options = {}) => {
   const url = buildApiUrl(path);
   const token = localStorage.getItem("token");
@@ -64,98 +44,57 @@ export const apiRequest = async (path, options = {}) => {
     ...options.headers,
   };
 
-  try {
-    const response = await fetchWithTimeout(url, {
-      ...options,
-      headers,
-    });
+  const response = await fetchWithTimeout(url, { ...options, headers });
 
-    // Handle 401 Unauthorized - token expired
-    if (response.status === 401) {
-      localStorage.removeItem("token");
-      window.location.href = "/login";
-      throw new Error("Session expired. Please log in again.");
-    }
-
-    // Handle other errors
-    if (!response.ok) {
-      const errorData = await response.json().catch(() => ({}));
-      throw new Error(errorData.detail || `API Error: ${response.status}`);
-    }
-
-    return await response.json();
-  } catch (error) {
-    // We let the caller handle logging if they want, or log here
-    console.error(`API Req Failed: ${path}`, error);
-    throw error;
+  if (response.status === 401) {
+    localStorage.removeItem("token");
+    window.location.href = "/login";
+    throw new Error("Session expired");
   }
+
+  if (!response.ok) {
+    const errorData = await response.json().catch(() => ({}));
+    throw new Error(errorData.detail || `API Error: ${response.status}`);
+  }
+
+  // FIXED: Handle DELETE responses (204 No Content) and empty responses
+  if (
+    response.status === 204 ||
+    response.headers.get("content-length") === "0"
+  ) {
+    return null;
+  }
+
+  // Only parse JSON if there's actual content
+  const contentType = response.headers.get("content-type");
+  if (contentType && contentType.includes("application/json")) {
+    const text = await response.text();
+    return text ? JSON.parse(text) : null;
+  }
+
+  return null;
 };
 
-/**
- * RETRY HELPER
- * Retries a function (like an API call) multiple times with exponential backoff
- * @param {Function} fn - The async function to retry
- * @param {number} maxRetries - Max attempts (default 3)
- */
+// 3. RETRY HELPER
 export const retryRequest = async (fn, maxRetries = 3) => {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn();
     } catch (err) {
-      if (i === maxRetries - 1) throw err; // Throw on final attempt
+      if (i === maxRetries - 1) throw err;
 
-      const waitTime = 1000 * (i + 1); // Backoff: 1s, 2s, 3s
-      console.warn(`Attempt ${i + 1} failed. Retrying in ${waitTime}ms...`);
+      const waitTime = 1000 * (i + 1);
       await new Promise((resolve) => setTimeout(resolve, waitTime));
     }
   }
 };
 
-/**
- * Convenience methods for common HTTP verbs
- * Usage: await api.get('/users')
- */
+// 4. API VERBS
 export const api = {
-  get: (path, options = {}) => apiRequest(path, { method: "GET", ...options }),
-
-  post: (path, data, options = {}) =>
-    apiRequest(path, {
-      method: "POST",
-      body: JSON.stringify(data),
-      ...options,
-    }),
-
-  put: (path, data, options = {}) =>
-    apiRequest(path, {
-      method: "PUT",
-      body: JSON.stringify(data),
-      ...options,
-    }),
-
-  patch: (path, data, options = {}) =>
-    apiRequest(path, {
-      method: "PATCH",
-      body: JSON.stringify(data),
-      ...options,
-    }),
-
-  delete: (path, options = {}) =>
-    apiRequest(path, {
-      method: "DELETE",
-      ...options,
-    }),
-};
-
-// Export constants
-export const API_URL = getApiUrl();
-export const API_ENDPOINTS = {
-  users: "/users",
-  login: "/users/login",
-  signup: "/users/signup",
-  reservations: "/reservations",
-  members: "/members",
-  diningRooms: "/dining-rooms",
-  timeSlots: "/time-slots",
-  rules: "/rules",
-  fees: "/fees",
+  get: (path) => apiRequest(path, { method: "GET" }),
+  post: (path, data) =>
+    apiRequest(path, { method: "POST", body: JSON.stringify(data) }),
+  patch: (path, data) =>
+    apiRequest(path, { method: "PATCH", body: JSON.stringify(data) }),
+  delete: (path) => apiRequest(path, { method: "DELETE" }),
 };
