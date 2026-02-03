@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams, useLocation } from "react-router-dom"; // <--- Added useLocation
 import { useData } from "../../hooks/useData";
 import { useToastTrigger } from "../../hooks/useToast";
 import { Save, X, AlertCircle, RotateCcw } from "lucide-react";
@@ -35,6 +35,13 @@ const minutesBetween = (start, end) => {
 export function ReservationForm() {
   const { id } = useParams();
   const navigate = useNavigate();
+
+  // --- URL PARAM PARSING (THE FIX) ---
+  const { search } = useLocation();
+  const queryParams = new URLSearchParams(search);
+  const dateParam = queryParams.get("date");
+  // -----------------------------------
+
   const { diningRooms, createReservation, updateReservation, reservations } =
     useData();
   const { addToast } = useToastTrigger();
@@ -49,7 +56,7 @@ export function ReservationForm() {
 
   const [formData, setFormData] = useState({
     dining_room_id: "",
-    date: "",
+    date: dateParam || "", // <--- Uses URL date if available
     meal_type: "dinner",
     start_time: "",
     end_time: "",
@@ -80,7 +87,11 @@ export function ReservationForm() {
 
       try {
         const parsed = JSON.parse(draft);
-        if (parsed.date || parsed.notes || parsed.dining_room_id) {
+        // Only restore draft if URL didn't provide a specific date override
+        if (
+          !dateParam &&
+          (parsed.date || parsed.notes || parsed.dining_room_id)
+        ) {
           if (window.confirm("Resume unsaved reservation draft?")) {
             setFormData(parsed);
             setDraftLoaded(true);
@@ -93,7 +104,7 @@ export function ReservationForm() {
         localStorage.removeItem("reservation_draft");
       }
     }
-  }, [isEditMode, existingReservation, addToast]);
+  }, [isEditMode, existingReservation, addToast, dateParam]);
 
   /* ---------- AUTO-SET TIMES ON MEAL CHANGE ---------- */
 
@@ -165,11 +176,11 @@ export function ReservationForm() {
     // UPDATED: Allow same-day bookings, only check if time is in the past
     if (formData.date && formData.start_time) {
       const now = new Date();
-      const selectedDateTime = new Date(
-        `${formData.date}T${formData.start_time}`,
-      );
+      // Ensure we compare against "today" correctly even with timezone offsets
+      const selectedDate = new Date(formData.date + "T" + formData.start_time);
 
-      if (selectedDateTime < now) {
+      // Simple check: Is the selected moment earlier than right now?
+      if (selectedDate < now) {
         errors.start_time = "Cannot schedule in the past";
       }
     }
@@ -219,7 +230,7 @@ export function ReservationForm() {
 
       // 4. Check for failure (if your hook returns null on error)
       if (!result) {
-        addToast("Failed to save reservation", "error");
+        // Typically handled by catch block, but just in case
         return;
       }
 
@@ -232,16 +243,12 @@ export function ReservationForm() {
         "success",
       );
 
-      // 7. ROUTE TO DETAIL PAGE (The Fix)
-      // Use 'result' here, because that is where the API response is stored
+      // 7. ROUTE TO DETAIL PAGE
       if (result?.id) {
         navigate(`/reservations/${result.id}`);
       }
     } catch (error) {
       console.error("Submission error:", error);
-
-      // --- THE FIX ---
-      // Use error.message coming from your api.js
       addToast(error.message || "An unexpected error occurred", "error");
     }
   };
@@ -279,7 +286,7 @@ export function ReservationForm() {
             >
               <option value="">-- Select Room --</option>
               {diningRooms
-                .filter((room) => room.is_active) // ← ADD THIS LINE
+                .filter((room) => room.is_active)
                 .map((room) => (
                   <option key={room.id} value={room.id}>
                     {room.name} - {room.capacity} seats
