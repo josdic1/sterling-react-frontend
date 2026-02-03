@@ -338,6 +338,46 @@ export function DataProvider({ children }) {
     loadAll();
   }, [loggedIn, readCache, writeCache, clearCache]);
 
+  /* ------------------ DINING ROOMS ------------------ */
+
+  const fetchDiningRooms = useCallback(async () => {
+    try {
+      const data = await retryRequest(() => api.get("/dining-rooms/"));
+      const nextRooms = data || [];
+
+      setDiningRooms(nextRooms);
+      writeCache(nextRooms, reservations, members);
+
+      return nextRooms;
+    } catch (err) {
+      console.error("fetchDiningRooms error:", err);
+      return null;
+    }
+  }, [members, reservations, writeCache]);
+
+  const adminUpdateDiningRoom = useCallback(
+    async (roomId, updateData) => {
+      try {
+        const updated = await api.patch(
+          `/admin/dining-rooms/${roomId}/`,
+          updateData,
+        );
+
+        setDiningRooms((prev) => {
+          const next = prev.map((r) => (r.id === roomId ? updated : r));
+          writeCache(next, reservations, members);
+          return next;
+        });
+
+        return { success: true, data: updated };
+      } catch (err) {
+        console.error("adminUpdateDiningRoom error:", err);
+        return { success: false };
+      }
+    },
+    [members, reservations, writeCache],
+  );
+
   const value = {
     diningRooms,
     reservations,
@@ -353,6 +393,8 @@ export function DataProvider({ children }) {
     fetchAttendees,
     addAttendee,
     removeAttendee,
+    fetchDiningRooms,
+    adminUpdateDiningRoom,
   };
 
   return <DataContext.Provider value={value}>{children}</DataContext.Provider>;

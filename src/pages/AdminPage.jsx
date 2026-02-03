@@ -1,6 +1,7 @@
 // src/pages/AdminPage.jsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
+import { useData } from "../hooks/useData";
 import { useNavigate } from "react-router-dom";
 import { api, retryRequest } from "../utils/api";
 import { useToastTrigger } from "../hooks/useToast";
@@ -9,13 +10,11 @@ import {
   Calendar,
   DollarSign,
   Home as HomeIcon,
-  Filter,
   Search,
   Edit2,
   Save,
   X,
   Trash2,
-  AlertCircle,
   TrendingUp,
 } from "lucide-react";
 
@@ -23,6 +22,9 @@ export function AdminPage() {
   const { user } = useAuth();
   const navigate = useNavigate();
   const { addToast } = useToastTrigger();
+
+  // Use provider rooms (single source of truth)
+  const { diningRooms, fetchDiningRooms, adminUpdateDiningRoom } = useData();
 
   // Redirect if not admin
   useEffect(() => {
@@ -41,7 +43,6 @@ export function AdminPage() {
   const [allReservations, setAllReservations] = useState([]);
   const [allMembers, setAllMembers] = useState([]);
   const [allRules, setAllRules] = useState([]);
-  const [allRooms, setAllRooms] = useState([]);
 
   // Loading states
   const [loading, setLoading] = useState(false);
@@ -120,10 +121,9 @@ export function AdminPage() {
   };
 
   const fetchAllRooms = async () => {
+    setLoading(true);
     try {
-      setLoading(true);
-      const data = await retryRequest(() => api.get("/dining-rooms/"));
-      setAllRooms(data);
+      await fetchDiningRooms();
     } catch (err) {
       console.error("Failed to fetch rooms:", err);
       addToast("Failed to load rooms", "error");
@@ -155,7 +155,10 @@ export function AdminPage() {
       case "rooms":
         fetchAllRooms();
         break;
+      default:
+        break;
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [activeTab]);
 
   // ==================== RULE EDITING ====================
@@ -175,20 +178,18 @@ export function AdminPage() {
   // ==================== ROOM EDITING ====================
 
   const handleUpdateRoom = async (roomId, updates) => {
-    try {
-      console.log("🔧 Updating room:", roomId, updates); // DEBUG
-      const response = await api.patch(
-        `/admin/dining-rooms/${roomId}/`,
-        updates,
-      );
-      console.log("✅ Room update response:", response); // DEBUG
-      addToast("Room updated successfully", "success");
-      setEditingRoom(null);
-      fetchAllRooms();
-    } catch (err) {
-      console.error("❌ Failed to update room:", err); // DEBUG
+    const result = await adminUpdateDiningRoom(roomId, updates);
+
+    if (!result?.success) {
       addToast("Failed to update room", "error");
+      return;
     }
+
+    addToast("Room updated successfully", "success");
+    setEditingRoom(null);
+
+    // Optional: force-refresh from server (usually not needed if provider updates state)
+    // await fetchDiningRooms();
   };
 
   // ==================== DELETE FUNCTIONS ====================
@@ -226,17 +227,10 @@ export function AdminPage() {
   // ==================== FILTERING ====================
 
   const filteredReservations = allReservations.filter((res) => {
-    // Status filter
-    if (statusFilter !== "all" && res.status !== statusFilter) {
+    if (statusFilter !== "all" && res.status !== statusFilter) return false;
+    if (roomFilter !== "all" && res.dining_room_id !== parseInt(roomFilter))
       return false;
-    }
 
-    // Room filter
-    if (roomFilter !== "all" && res.dining_room_id !== parseInt(roomFilter)) {
-      return false;
-    }
-
-    // Search term (searches notes and date)
     if (searchTerm) {
       const search = searchTerm.toLowerCase();
       return (
@@ -340,11 +334,9 @@ export function AdminPage() {
                       },
                     );
 
-                    if (!response.ok) {
+                    if (!response.ok)
                       throw new Error("Failed to generate report");
-                    }
 
-                    // Download the PDF
                     const blob = await response.blob();
                     const url = window.URL.createObjectURL(blob);
                     const a = document.createElement("a");
@@ -464,7 +456,6 @@ export function AdminPage() {
         {/* RESERVATIONS TAB */}
         {activeTab === "reservations" && (
           <div>
-            {/* Filters */}
             <div className="admin-filters">
               <div className="filter-group">
                 <Search size={16} />
@@ -491,7 +482,7 @@ export function AdminPage() {
                 className="filter-select"
               >
                 <option value="all">All Rooms</option>
-                {allRooms.map((room) => (
+                {diningRooms.map((room) => (
                   <option key={room.id} value={room.id}>
                     {room.name}
                   </option>
@@ -517,7 +508,7 @@ export function AdminPage() {
                 </thead>
                 <tbody>
                   {filteredReservations.map((res) => {
-                    const room = allRooms.find(
+                    const room = diningRooms.find(
                       (r) => r.id === res.dining_room_id,
                     );
                     return (
@@ -563,7 +554,6 @@ export function AdminPage() {
         {/* MEMBERS TAB */}
         {activeTab === "members" && (
           <div>
-            {/* Search */}
             <div className="admin-filters">
               <div className="filter-group">
                 <Search size={16} />
@@ -677,7 +667,9 @@ export function AdminPage() {
                           />
                         ) : (
                           <span
-                            className={`status-badge ${rule.enabled ? "status-active" : "status-inactive"}`}
+                            className={`status-badge ${
+                              rule.enabled ? "status-active" : "status-inactive"
+                            }`}
                           >
                             {rule.enabled ? "Active" : "Disabled"}
                           </span>
@@ -755,7 +747,7 @@ export function AdminPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {allRooms.map((room) => (
+                  {diningRooms.map((room) => (
                     <tr key={room.id}>
                       <td className="font-bold">{room.name}</td>
                       <td>
@@ -783,7 +775,11 @@ export function AdminPage() {
                           </label>
                         ) : (
                           <span
-                            className={`status-badge ${room.is_active ? "status-active" : "status-inactive"}`}
+                            className={`status-badge ${
+                              room.is_active
+                                ? "status-active"
+                                : "status-inactive"
+                            }`}
                           >
                             {room.is_active ? "Active" : "Inactive"}
                           </span>
