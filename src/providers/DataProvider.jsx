@@ -3,8 +3,13 @@ import React, { useState, useEffect, useContext, useCallback } from "react";
 import { DataContext } from "../contexts/DataContext";
 import { AuthContext } from "../contexts/AuthContext";
 import { api, retryRequest } from "../utils/api";
+import { asArrayOfObjects } from "../utils/safe";
 
 const CACHE_TTL_MS = 5 * 60 * 1000;
+
+// IMPORTANT: make this match your backend.
+// If your backend uses /dining-rooms/ then change this to "/dining-rooms/"
+const DINING_ROOMS_ENDPOINT = "/dining_rooms/";
 
 export function DataProvider({ children }) {
   const { loggedIn } = useContext(AuthContext);
@@ -29,12 +34,17 @@ export function DataProvider({ children }) {
       const cacheKey = getCacheKey();
       if (!cacheKey) return;
 
+      // sanitize BEFORE caching so garbage never persists
+      const safeRooms = asArrayOfObjects(nextRooms);
+      const safeRes = asArrayOfObjects(nextReservations);
+      const safeMembers = asArrayOfObjects(nextMembers);
+
       localStorage.setItem(
         cacheKey,
         JSON.stringify({
-          rooms: nextRooms ?? [],
-          reservations: nextReservations ?? [],
-          members: nextMembers ?? [],
+          rooms: safeRooms,
+          reservations: safeRes,
+          members: safeMembers,
         }),
       );
       localStorage.setItem(`${cacheKey}_time`, String(Date.now()));
@@ -54,7 +64,14 @@ export function DataProvider({ children }) {
     if (Number.isNaN(age) || age > CACHE_TTL_MS) return null;
 
     try {
-      return JSON.parse(cachedData);
+      const parsed = JSON.parse(cachedData);
+
+      // sanitize AFTER reading cache too
+      return {
+        rooms: asArrayOfObjects(parsed?.rooms),
+        reservations: asArrayOfObjects(parsed?.reservations),
+        members: asArrayOfObjects(parsed?.members),
+      };
     } catch {
       localStorage.removeItem(cacheKey);
       localStorage.removeItem(`${cacheKey}_time`);
@@ -75,13 +92,15 @@ export function DataProvider({ children }) {
     async (id) => {
       try {
         const data = await retryRequest(() => api.get(`/reservations/${id}`));
+        if (!data || typeof data !== "object") return null;
 
         setReservations((prev) => {
-          const next = prev.some((r) => r.id === data.id)
-            ? prev.map((r) => (r.id === data.id ? data : r))
-            : [...prev, data];
+          const safePrev = asArrayOfObjects(prev);
 
-          // keep cache in sync
+          const next = safePrev.some((r) => r?.id === data.id)
+            ? safePrev.map((r) => (r?.id === data.id ? data : r))
+            : [...safePrev, data];
+
           writeCache(diningRooms, next, members);
           return next;
         });
@@ -99,9 +118,11 @@ export function DataProvider({ children }) {
     async (newRes) => {
       try {
         const data = await api.post("/reservations/", newRes);
+        if (!data || typeof data !== "object") return null;
 
         setReservations((prev) => {
-          const next = [...prev, data];
+          const safePrev = asArrayOfObjects(prev);
+          const next = [...safePrev, data];
           writeCache(diningRooms, next, members);
           return next;
         });
@@ -119,9 +140,11 @@ export function DataProvider({ children }) {
     async (id, updateData) => {
       try {
         const data = await api.patch(`/reservations/${id}`, updateData);
+        if (!data || typeof data !== "object") return null;
 
         setReservations((prev) => {
-          const next = prev.map((r) => (r.id === id ? data : r));
+          const safePrev = asArrayOfObjects(prev);
+          const next = safePrev.map((r) => (r?.id === id ? data : r));
           writeCache(diningRooms, next, members);
           return next;
         });
@@ -141,7 +164,8 @@ export function DataProvider({ children }) {
         await api.delete(`/reservations/${id}`);
 
         setReservations((prev) => {
-          const next = prev.filter((r) => r.id !== id);
+          const safePrev = asArrayOfObjects(prev);
+          const next = safePrev.filter((r) => r?.id !== id);
           writeCache(diningRooms, next, members);
           return next;
         });
@@ -162,7 +186,7 @@ export function DataProvider({ children }) {
       const data = await retryRequest(() =>
         api.get(`/reservations/${resId}/attendees/`),
       );
-      return data || [];
+      return asArrayOfObjects(data);
     } catch (err) {
       console.error("fetchAttendees error:", err);
       return [];
@@ -178,9 +202,10 @@ export function DataProvider({ children }) {
         );
 
         setReservations((prev) => {
-          const next = prev.map((r) =>
-            r.id === Number(resId)
-              ? { ...r, attendee_count: (r.attendee_count || 0) + 1 }
+          const safePrev = asArrayOfObjects(prev);
+          const next = safePrev.map((r) =>
+            r?.id === Number(resId)
+              ? { ...r, attendee_count: (r?.attendee_count || 0) + 1 }
               : r,
           );
           writeCache(diningRooms, next, members);
@@ -202,11 +227,12 @@ export function DataProvider({ children }) {
         await api.delete(`/reservations/${resId}/attendees/${attendeeId}/`);
 
         setReservations((prev) => {
-          const next = prev.map((r) =>
-            r.id === Number(resId)
+          const safePrev = asArrayOfObjects(prev);
+          const next = safePrev.map((r) =>
+            r?.id === Number(resId)
               ? {
                   ...r,
-                  attendee_count: Math.max(0, (r.attendee_count || 0) - 1),
+                  attendee_count: Math.max(0, (r?.attendee_count || 0) - 1),
                 }
               : r,
           );
@@ -229,9 +255,13 @@ export function DataProvider({ children }) {
     async (memberData) => {
       try {
         const newMember = await api.post("/members/", memberData);
+        if (!newMember || typeof newMember !== "object") {
+          return { success: false };
+        }
 
         setMembers((prev) => {
-          const next = [...prev, newMember];
+          const safePrev = asArrayOfObjects(prev);
+          const next = [...safePrev, newMember];
           writeCache(diningRooms, reservations, next);
           return next;
         });
@@ -252,9 +282,15 @@ export function DataProvider({ children }) {
           `/members/${memberId}/`,
           updateData,
         );
+        if (!updatedMember || typeof updatedMember !== "object") {
+          return { success: false };
+        }
 
         setMembers((prev) => {
-          const next = prev.map((m) => (m.id === memberId ? updatedMember : m));
+          const safePrev = asArrayOfObjects(prev);
+          const next = safePrev.map((m) =>
+            m?.id === memberId ? updatedMember : m,
+          );
           writeCache(diningRooms, reservations, next);
           return next;
         });
@@ -274,7 +310,8 @@ export function DataProvider({ children }) {
         await api.delete(`/members/${memberId}/`);
 
         setMembers((prev) => {
-          const next = prev.filter((m) => m.id !== memberId);
+          const safePrev = asArrayOfObjects(prev);
+          const next = safePrev.filter((m) => m?.id !== memberId);
           writeCache(diningRooms, reservations, next);
           return next;
         });
@@ -301,9 +338,9 @@ export function DataProvider({ children }) {
       // 1) Try cache
       const cached = readCache();
       if (cached) {
-        setDiningRooms(cached.rooms || []);
-        setReservations(cached.reservations || []);
-        setMembers(cached.members || []);
+        setDiningRooms(asArrayOfObjects(cached.rooms));
+        setReservations(asArrayOfObjects(cached.reservations));
+        setMembers(asArrayOfObjects(cached.members));
         setLoading(false);
         return;
       }
@@ -312,14 +349,14 @@ export function DataProvider({ children }) {
       setLoading(true);
       try {
         const [roomsData, resData, memData] = await Promise.all([
-          retryRequest(() => api.get("/dining-rooms/")),
+          retryRequest(() => api.get(DINING_ROOMS_ENDPOINT)),
           retryRequest(() => api.get("/reservations/")),
           retryRequest(() => api.get("/members/")),
         ]);
 
-        const nextRooms = roomsData || [];
-        const nextRes = resData || [];
-        const nextMem = memData || [];
+        const nextRooms = asArrayOfObjects(roomsData);
+        const nextRes = asArrayOfObjects(resData);
+        const nextMem = asArrayOfObjects(memData);
 
         setDiningRooms(nextRooms);
         setReservations(nextRes);
@@ -328,7 +365,6 @@ export function DataProvider({ children }) {
         writeCache(nextRooms, nextRes, nextMem);
       } catch (err) {
         console.error("loadAll failed after retries:", err);
-        // If fetch fails, do not keep stale cache around
         clearCache();
       } finally {
         setLoading(false);
@@ -342,8 +378,8 @@ export function DataProvider({ children }) {
 
   const fetchDiningRooms = useCallback(async () => {
     try {
-      const data = await retryRequest(() => api.get("/dining-rooms/"));
-      const nextRooms = data || [];
+      const data = await retryRequest(() => api.get(DINING_ROOMS_ENDPOINT));
+      const nextRooms = asArrayOfObjects(data);
 
       setDiningRooms(nextRooms);
       writeCache(nextRooms, reservations, members);
@@ -358,13 +394,15 @@ export function DataProvider({ children }) {
   const adminUpdateDiningRoom = useCallback(
     async (roomId, updateData) => {
       try {
+        // keep your current admin endpoint as-is
         const updated = await api.patch(
           `/admin/dining-rooms/${roomId}/`,
           updateData,
         );
 
         setDiningRooms((prev) => {
-          const next = prev.map((r) => (r.id === roomId ? updated : r));
+          const safePrev = asArrayOfObjects(prev);
+          const next = safePrev.map((r) => (r?.id === roomId ? updated : r));
           writeCache(next, reservations, members);
           return next;
         });

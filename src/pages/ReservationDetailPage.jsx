@@ -1,5 +1,5 @@
 // src/pages/ReservationDetailPage.jsx
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useData } from "../hooks/useData";
 import { useToastTrigger } from "../hooks/useToast";
@@ -8,12 +8,12 @@ import { AttendeeForm } from "../components/attendees/AttendeeForm";
 import { SaveFloater } from "../components/shared/SaveFloater";
 import { Edit3, UserPlus, Clock, DollarSign, AlertCircle } from "lucide-react";
 
-// UPDATED: Import api helper and retryRequest instead of manual buildApiUrl
 import { api, retryRequest } from "../utils/api";
 
 export function ReservationDetailPage() {
   const { id } = useParams();
   const navigate = useNavigate();
+
   const [needsFetch, setNeedsFetch] = useState(true);
   const [showSaveFloater, setShowSaveFloater] = useState(false);
   const [fees, setFees] = useState([]);
@@ -33,41 +33,40 @@ export function ReservationDetailPage() {
     removeAttendee,
   } = useData();
 
-  const resId = parseInt(id);
+  const resId = Number.parseInt(id, 10);
   const reservation = reservations?.find((r) => r.id === resId);
 
-  // Convert 24hr time to 12hr AM/PM format
   const formatTime = (time24) => {
     if (!time24) return "";
     const [hours, minutes] = time24.split(":");
-    const hour = parseInt(hours);
+    const hour = Number.parseInt(hours, 10);
     const ampm = hour >= 12 ? "PM" : "AM";
     const hour12 = hour % 12 || 12;
     return `${hour12}:${minutes} ${ampm}`;
   };
 
-  // Sync Reservation Data
+  // Sync Reservation + Attendees
   useEffect(() => {
+    let alive = true;
+
     const sync = async () => {
       try {
-        if (!resId) return;
+        if (!resId || Number.isNaN(resId)) return;
 
-        if (reservation) {
-          const attendees = await fetchAttendees(resId);
-          setCurrentAttendees(attendees || []);
-          setNeedsFetch(false);
-          return;
-        }
-
-        // DataProvider handles retries for these methods internally
-        const current = await fetchReservationById(resId);
-        if (!current) {
-          navigate("/", { replace: true });
-          return;
+        if (!reservation) {
+          const current = await fetchReservationById(resId);
+          if (!current) {
+            navigate("/", { replace: true });
+            return;
+          }
         }
 
         const attendees = await fetchAttendees(resId);
-        setCurrentAttendees(attendees || []);
+        if (!alive) return;
+
+        setCurrentAttendees(
+          Array.isArray(attendees) ? attendees.filter(Boolean) : [],
+        );
         setNeedsFetch(false);
       } catch (err) {
         console.error("Sync failed:", err);
@@ -75,25 +74,30 @@ export function ReservationDetailPage() {
     };
 
     sync();
+    return () => {
+      alive = false;
+    };
   }, [resId, reservation, fetchReservationById, fetchAttendees, navigate]);
 
-  // Fetch fees with Retry Pattern
+  // Fetch fees (only when reservation id changes, not when attendees change)
   useEffect(() => {
+    let alive = true;
+
     const loadFees = async () => {
-      if (!resId) return;
+      if (!resId || Number.isNaN(resId)) return;
 
       try {
         setFeesError(null);
 
-        // UPDATED: Using retryRequest wrapper + api helper
-        // This will try up to 3 times if the connection fails
         const data = await retryRequest(() =>
           api.get(`/reservations/${resId}/fees/`),
         );
 
-        setFees(data);
+        if (!alive) return;
+        setFees(Array.isArray(data) ? data.filter(Boolean) : []);
       } catch (err) {
         console.error("Fee fetch failed after retries:", err);
+        if (!alive) return;
         setFeesError(
           "Could not load fee information. Please check your connection.",
         );
@@ -101,12 +105,27 @@ export function ReservationDetailPage() {
     };
 
     loadFees();
-  }, [resId, currentAttendees]);
+    return () => {
+      alive = false;
+    };
+  }, [resId]);
 
-  const unseatedMembers =
-    members?.filter(
-      (member) => !currentAttendees.find((att) => att.member_id === member.id),
-    ) || [];
+  // Defensive: ensure arrays
+  const safeMembers = useMemo(
+    () => (Array.isArray(members) ? members : []),
+    [members],
+  );
+  const safeAttendees = useMemo(
+    () =>
+      Array.isArray(currentAttendees) ? currentAttendees.filter(Boolean) : [],
+    [currentAttendees],
+  );
+
+  const unseatedMembers = useMemo(() => {
+    return safeMembers.filter(
+      (member) => !safeAttendees.some((att) => att?.member_id === member.id),
+    );
+  }, [safeMembers, safeAttendees]);
 
   const handleQuickAddMember = async (member) => {
     const result = await addAttendee(resId, {
@@ -116,12 +135,14 @@ export function ReservationDetailPage() {
       dietary_restrictions: member.dietary_restrictions,
     });
 
-    if (result.success) {
+    if (result?.success) {
       addToast(`${member.name} added to table`, "success");
       setShowSaveFloater(true);
-      // Refresh attendees
+
       const attendees = await fetchAttendees(resId);
-      setCurrentAttendees(attendees || []);
+      setCurrentAttendees(
+        Array.isArray(attendees) ? attendees.filter(Boolean) : [],
+      );
     } else {
       addToast("Failed to add guest", "error");
     }
@@ -129,12 +150,15 @@ export function ReservationDetailPage() {
 
   const handleRemoveAttendee = async (attendeeId, attendeeName) => {
     const result = await removeAttendee(resId, attendeeId);
-    if (result.success) {
+
+    if (result?.success) {
       addToast(`${attendeeName} removed from table`, "success");
       setShowSaveFloater(true);
-      // Refresh attendees
+
       const attendees = await fetchAttendees(resId);
-      setCurrentAttendees(attendees || []);
+      setCurrentAttendees(
+        Array.isArray(attendees) ? attendees.filter(Boolean) : [],
+      );
     } else {
       addToast("Failed to remove guest", "error");
     }
@@ -149,7 +173,11 @@ export function ReservationDetailPage() {
   }
 
   const room = diningRooms?.find((r) => r.id === reservation?.dining_room_id);
-  const totalFees = fees.reduce((sum, fee) => sum + fee.calculated_amount, 0);
+
+  const totalFees = (Array.isArray(fees) ? fees : []).reduce(
+    (sum, fee) => sum + (Number(fee?.calculated_amount) || 0),
+    0,
+  );
 
   return (
     <div className="container">
@@ -197,7 +225,6 @@ export function ReservationDetailPage() {
         </div>
       </div>
 
-      {/* FEES ERROR STATE */}
       {feesError && (
         <div
           className="error-state"
@@ -208,8 +235,7 @@ export function ReservationDetailPage() {
         </div>
       )}
 
-      {/* FEES LIST */}
-      {!feesError && fees.length > 0 && (
+      {!feesError && Array.isArray(fees) && fees.length > 0 && (
         <div className="fees-section">
           <h3 className="section-label">
             <DollarSign
@@ -218,6 +244,7 @@ export function ReservationDetailPage() {
             />
             Applied Fees
           </h3>
+
           <table className="sterling-table">
             <thead>
               <tr>
@@ -226,20 +253,29 @@ export function ReservationDetailPage() {
                 <th>Status</th>
               </tr>
             </thead>
+
             <tbody>
-              {fees.map((fee) => (
-                <tr key={fee.id}>
-                  <td className="font-bold">{fee.rule.name}</td>
-                  <td>${fee.calculated_amount.toFixed(2)}</td>
-                  <td>
-                    <span
-                      className={`fee-status ${fee.paid ? "paid" : "pending"}`}
-                    >
-                      {fee.paid ? "PAID" : "PENDING"}
-                    </span>
-                  </td>
-                </tr>
-              ))}
+              {fees.map((fee) => {
+                const ruleName =
+                  fee?.rule?.name ??
+                  (fee?.rule_id ? `Rule #${fee.rule_id}` : "Unknown rule");
+                const amount = Number(fee?.calculated_amount) || 0;
+
+                return (
+                  <tr key={fee?.id ?? `${ruleName}-${amount}`}>
+                    <td className="font-bold">{ruleName}</td>
+                    <td>${amount.toFixed(2)}</td>
+                    <td>
+                      <span
+                        className={`fee-status ${fee?.paid ? "paid" : "pending"}`}
+                      >
+                        {fee?.paid ? "PAID" : "PENDING"}
+                      </span>
+                    </td>
+                  </tr>
+                );
+              })}
+
               <tr className="fee-total-row">
                 <td className="font-bold">TOTAL</td>
                 <td className="font-bold">${totalFees.toFixed(2)}</td>
@@ -253,7 +289,7 @@ export function ReservationDetailPage() {
       <div className="detail-layout">
         <div className="main-content">
           <AttendeeList
-            attendees={currentAttendees}
+            attendees={safeAttendees}
             reservationId={resId}
             onRemove={handleRemoveAttendee}
           />
@@ -290,9 +326,11 @@ export function ReservationDetailPage() {
               onSuccess={async (name) => {
                 addToast(`${name} added to table`, "success");
                 setShowSaveFloater(true);
-                // Refresh attendees
+
                 const attendees = await fetchAttendees(resId);
-                setCurrentAttendees(attendees || []);
+                setCurrentAttendees(
+                  Array.isArray(attendees) ? attendees.filter(Boolean) : [],
+                );
               }}
             />
           </div>
