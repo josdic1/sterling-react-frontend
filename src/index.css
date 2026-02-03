@@ -2587,6 +2587,7 @@ button:active {
   width: 100%;
   text-align: center;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  pointer-events: none;
 }
 
 .react-calendar__tile--active .calendar-badge {

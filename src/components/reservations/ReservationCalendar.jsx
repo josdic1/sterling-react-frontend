@@ -3,40 +3,54 @@ import Calendar from "react-calendar";
 import { useNavigate } from "react-router-dom";
 import "react-calendar/dist/Calendar.css";
 
-
 export function ReservationCalendar({ reservations = [], isAdmin = false }) {
   const [date, setDate] = useState(new Date());
   const navigate = useNavigate();
 
-  const handleDateChange = (selectedDate) => {
-    setDate(selectedDate);
-    // If NOT admin, clicking a date prepares to book
-    if (!isAdmin) {
-      // ... standard booking logic (optional)
+  // --- HELPER: Get clean YYYY-MM-DD string from a date object ---
+  const getDateString = (d) => {
+    const year = d.getFullYear();
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const day = String(d.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  };
+
+  const selectedDateStr = getDateString(date);
+
+  // Check if there is already a reservation on the SELECTED date (for the button)
+  const existingReservation = reservations.find(
+    (r) => r.date === selectedDateStr && r.status !== "cancelled",
+  );
+
+  // --- THE FIX: Handle clicks directly on the calendar grid ---
+  const handleDayClick = (value) => {
+    // 1. Update the visual selection immediately
+    setDate(value);
+
+    // 2. Check if the clicked day has a booking
+    const clickedDateStr = getDateString(value);
+    const clickedBooking = reservations.find(
+      (r) => r.date === clickedDateStr && r.status !== "cancelled",
+    );
+
+    // 3. If User (not Admin) and booking exists -> GO THERE
+    if (clickedBooking && !isAdmin) {
+      navigate(`/reservations/${clickedBooking.id}`);
     }
   };
 
-  const handleCreateClick = () => {
-    // Manual timezone fix to ensure we get YYYY-MM-DD correctly
-    const offset = date.getTimezoneOffset();
-    const cleanDate = new Date(date.getTime() - offset * 60 * 1000);
-    const dateStr = cleanDate.toISOString().split("T")[0];
-
-    navigate(`/reservations/new?date=${dateStr}`);
+  const handleActionClick = () => {
+    if (existingReservation && !isAdmin) {
+      navigate(`/reservations/${existingReservation.id}`);
+    } else {
+      navigate(`/reservations/new?date=${selectedDateStr}`);
+    }
   };
 
-  // Helper to check if a tile date matches a reservation date
+  // Helper to draw the black/white pills
   const getTileContent = ({ date, view }) => {
     if (view === "month") {
-      // Format tile date to YYYY-MM-DD
-      const tileStr =
-        date.getFullYear() +
-        "-" +
-        String(date.getMonth() + 1).padStart(2, "0") +
-        "-" +
-        String(date.getDate()).padStart(2, "0");
-
-      // Count reservations for this day (filter out cancelled)
+      const tileStr = getDateString(date);
       const dayReservations = reservations.filter(
         (r) => r.date === tileStr && r.status !== "cancelled",
       );
@@ -54,9 +68,9 @@ export function ReservationCalendar({ reservations = [], isAdmin = false }) {
 
       <div className="calendar-wrapper">
         <Calendar
-          onChange={handleDateChange}
+          onClickDay={handleDayClick} // <--- THIS IS THE MISSING LINK
           value={date}
-          minDate={isAdmin ? null : new Date()} // Admins can see past dates
+          minDate={isAdmin ? null : new Date()}
           tileContent={getTileContent}
         />
       </div>
@@ -64,31 +78,24 @@ export function ReservationCalendar({ reservations = [], isAdmin = false }) {
       <div className="calendar-actions">
         <p>Selected: {date.toDateString()}</p>
 
-        {/* Only show "Book" button if user is NOT admin */}
-        {!isAdmin && (
-          <button onClick={handleCreateClick} className="btn-primary">
-            Book for this Date
-          </button>
-        )}
-
-        {/* If Admin, show summary for selected date */}
-        {isAdmin && (
+        {isAdmin ? (
           <div className="admin-day-summary">
             {
-              reservations.filter((r) => {
-                const d = new Date(date);
-                // Match YYYY-MM-DD manually
-                const selStr =
-                  d.getFullYear() +
-                  "-" +
-                  String(d.getMonth() + 1).padStart(2, "0") +
-                  "-" +
-                  String(d.getDate()).padStart(2, "0");
-                return r.date === selStr && r.status !== "cancelled";
-              }).length
+              reservations.filter(
+                (r) => r.date === selectedDateStr && r.status !== "cancelled",
+              ).length
             }{" "}
             bookings on this day.
           </div>
+        ) : (
+          <button
+            onClick={handleActionClick}
+            className={existingReservation ? "btn-secondary" : "btn-primary"}
+          >
+            {existingReservation
+              ? "View Existing Booking"
+              : "Book for this Date"}
+          </button>
         )}
       </div>
     </div>
