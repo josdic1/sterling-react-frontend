@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Calendar from "react-calendar";
 import { useNavigate } from "react-router-dom";
+import { ReservationList } from "./ReservationList"; // <--- Import the List Component
 import "react-calendar/dist/Calendar.css";
 
 export function ReservationCalendar({ reservations = [], isAdmin = false }) {
@@ -17,25 +18,28 @@ export function ReservationCalendar({ reservations = [], isAdmin = false }) {
 
   const selectedDateStr = getDateString(date);
 
-  // Check if there is already a reservation on the SELECTED date (for the button)
-  const existingReservation = reservations.find(
+  // Filter for the *selected* date (Admin view)
+  const dailyReservations = reservations.filter(
     (r) => r.date === selectedDateStr && r.status !== "cancelled",
   );
 
-  // --- THE FIX: Handle clicks directly on the calendar grid ---
+  // Check if there is already a reservation on the SELECTED date (for the User button)
+  const existingReservation = dailyReservations[0];
+
   const handleDayClick = (value) => {
     // 1. Update the visual selection immediately
     setDate(value);
 
-    // 2. Check if the clicked day has a booking
-    const clickedDateStr = getDateString(value);
-    const clickedBooking = reservations.find(
-      (r) => r.date === clickedDateStr && r.status !== "cancelled",
-    );
-
-    // 3. If User (not Admin) and booking exists -> GO THERE
-    if (clickedBooking && !isAdmin) {
-      navigate(`/reservations/${clickedBooking.id}`);
+    // 2. Logic for regular users (Navigate immediately)
+    // Admins STAY on the page to see the list below
+    if (!isAdmin) {
+      const clickedDateStr = getDateString(value);
+      const clickedBooking = reservations.find(
+        (r) => r.date === clickedDateStr && r.status !== "cancelled",
+      );
+      if (clickedBooking) {
+        navigate(`/reservations/${clickedBooking.id}`);
+      }
     }
   };
 
@@ -68,7 +72,7 @@ export function ReservationCalendar({ reservations = [], isAdmin = false }) {
 
       <div className="calendar-wrapper">
         <Calendar
-          onClickDay={handleDayClick} // <--- THIS IS THE MISSING LINK
+          onClickDay={handleDayClick}
           value={date}
           minDate={isAdmin ? null : new Date()}
           tileContent={getTileContent}
@@ -76,16 +80,40 @@ export function ReservationCalendar({ reservations = [], isAdmin = false }) {
       </div>
 
       <div className="calendar-actions">
-        <p>Selected: {date.toDateString()}</p>
+        <p style={{ marginBottom: "1.5rem" }}>
+          Selected: <strong>{date.toDateString()}</strong>
+        </p>
 
         {isAdmin ? (
-          <div className="admin-day-summary">
-            {
-              reservations.filter(
-                (r) => r.date === selectedDateStr && r.status !== "cancelled",
-              ).length
-            }{" "}
-            bookings on this day.
+          <div className="admin-day-view" style={{ width: "100%" }}>
+            <div
+              className="admin-day-summary"
+              style={{
+                marginBottom: "1rem",
+                color: "#eb5638",
+                fontWeight: "bold",
+              }}
+            >
+              {dailyReservations.length} bookings found
+            </div>
+
+            {/* --- SHOW THE LIST HERE --- */}
+            {dailyReservations.length > 0 ? (
+              <div style={{ textAlign: "left" }}>
+                <ReservationList reservations={dailyReservations} />
+              </div>
+            ) : (
+              <div
+                className="empty-msg"
+                style={{
+                  padding: "2rem",
+                  background: "#f8f8f8",
+                  borderRadius: "8px",
+                }}
+              >
+                No reservations scheduled for this day.
+              </div>
+            )}
           </div>
         ) : (
           <button
