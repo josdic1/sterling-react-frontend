@@ -162,12 +162,16 @@ export function ReservationForm() {
     if (!formData.start_time) errors.start_time = "Start time required";
     if (!formData.end_time) errors.end_time = "End time required";
 
-    if (
-      formData.date === today &&
-      formData.start_time &&
-      formData.start_time < nowTime
-    ) {
-      errors.start_time = "Cannot schedule in the past";
+    // UPDATED: Allow same-day bookings, only check if time is in the past
+    if (formData.date && formData.start_time) {
+      const now = new Date();
+      const selectedDateTime = new Date(
+        `${formData.date}T${formData.start_time}`,
+      );
+
+      if (selectedDateTime < now) {
+        errors.start_time = "Cannot schedule in the past";
+      }
     }
 
     if (
@@ -288,7 +292,6 @@ export function ReservationForm() {
             <input
               type="date"
               name="date"
-              min={today}
               value={formData.date}
               onChange={onChange}
             />

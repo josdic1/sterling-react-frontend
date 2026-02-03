@@ -2319,3 +2319,135 @@ button:active {
     opacity: 0.6;
   }
 }
+
+/* ==================== TUTORIAL MODAL MOBILE FIX ==================== */
+
+/* Base modal - prevent overflow on mobile */
+.tutorial-modal {
+  max-height: 90vh;
+  overflow-y: auto;
+  width: 95%;
+  max-width: 600px;
+}
+
+/* Make content scrollable on small screens */
+.tutorial-content {
+  max-height: 60vh;
+  overflow-y: auto;
+  padding: 1rem;
+}
+
+/* Responsive font sizes */
+@media (max-width: 640px) {
+  .tutorial-modal {
+    width: 95%;
+    margin: 1rem;
+  }
+
+  .tutorial-emoji {
+    font-size: 2rem;
+  }
+
+  .tutorial-modal h2 {
+    font-size: 1.25rem;
+  }
+
+  .tutorial-description {
+    font-size: 0.9rem;
+  }
+
+  /* Compact visual guide on mobile */
+  .tutorial-legend-item {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.25rem;
+  }
+
+  .tutorial-legend-color {
+    width: 100%;
+    height: 4px;
+  }
+
+  /* Stack footer buttons on very small screens */
+  .tutorial-footer {
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
+
+  .tutorial-btn {
+    flex: 1;
+    min-width: 100px;
+  }
+
+  /* Make dots smaller */
+  .tutorial-dot {
+    width: 6px;
+    height: 6px;
+  }
+
+  /* Reduce section spacing */
+  .tutorial-section {
+    margin-top: 1rem;
+  }
+
+  .tutorial-list li {
+    font-size: 0.85rem;
+    padding: 0.25rem 0;
+  }
+}
+.btn-help {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1rem;
+  background: transparent;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  color: #374151;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.btn-help:hover {
+  background: #f3f4f6;
+  border-color: #eb5638;
+  color: #eb5638;
+}
+
+@media (max-width: 768px) {
+  .btn-help span {
+    display: none;
+  }
+}
+
+/* ==================== ADMIN REPORT GENERATOR ==================== */
+
+.report-generator-card {
+  background: white;
+  border: 2px solid #121212;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  border-radius: 8px;
+}
+
+.report-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+@media (max-width: 640px) {
+  .report-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .report-controls .input-group {
+    max-width: 100% !important;
+  }
+
+  .report-controls button {
+    width: 100%;
+  }
+}

@@ -16,6 +16,7 @@ import {
   X,
   Trash2,
   TrendingUp,
+  Download,
 } from "lucide-react";
 
 export function AdminPage() {
@@ -55,6 +56,11 @@ export function AdminPage() {
   // Edit states
   const [editingRule, setEditingRule] = useState(null);
   const [editingRoom, setEditingRoom] = useState(null);
+
+  // ADDED: Report date state
+  const [reportDate, setReportDate] = useState(
+    new Date().toISOString().split("T")[0],
+  );
 
   // ==================== DATA FETCHING ====================
 
@@ -132,6 +138,40 @@ export function AdminPage() {
     }
   };
 
+  // ==================== REPORT DOWNLOAD ====================
+
+  const handleDownloadReport = async () => {
+    try {
+      const token = localStorage.getItem("token");
+
+      const response = await fetch(
+        `${import.meta.env.VITE_API_URL}/admin/reports/daily-pdf?date=${reportDate}`,
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        },
+      );
+
+      if (!response.ok) throw new Error("Failed to generate report");
+
+      const blob = await response.blob();
+      const url = window.URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `sterling_daily_report_${reportDate}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+
+      addToast("Report downloaded successfully", "success");
+    } catch (err) {
+      console.error("Failed to download report:", err);
+      addToast("Failed to download report", "error");
+    }
+  };
+
   // ==================== TAB CHANGE ====================
 
   useEffect(() => {
@@ -144,7 +184,7 @@ export function AdminPage() {
         break;
       case "reservations":
         fetchAllReservations();
-        fetchAllRooms(); // NEED ROOMS FOR DISPLAY
+        fetchAllRooms();
         break;
       case "members":
         fetchAllMembers();
@@ -187,9 +227,6 @@ export function AdminPage() {
 
     addToast("Room updated successfully", "success");
     setEditingRoom(null);
-
-    // Optional: force-refresh from server (usually not needed if provider updates state)
-    // await fetchDiningRooms();
   };
 
   // ==================== DELETE FUNCTIONS ====================
@@ -317,60 +354,73 @@ export function AdminPage() {
         {/* STATS TAB */}
         {activeTab === "stats" && stats && (
           <div>
-            {/* TODAY'S REPORT BUTTON */}
-            <div style={{ marginBottom: "2rem", textAlign: "center" }}>
-              <button
-                onClick={async () => {
-                  try {
-                    const today = new Date().toISOString().split("T")[0];
-                    const token = localStorage.getItem("token");
-
-                    const response = await fetch(
-                      `${import.meta.env.VITE_API_URL}/admin/reports/daily-pdf?date=${today}`,
-                      {
-                        headers: {
-                          Authorization: `Bearer ${token}`,
-                        },
-                      },
-                    );
-
-                    if (!response.ok)
-                      throw new Error("Failed to generate report");
-
-                    const blob = await response.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement("a");
-                    a.href = url;
-                    a.download = `sterling_daily_report_${today}.pdf`;
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    window.URL.revokeObjectURL(url);
-
-                    addToast("Report downloaded successfully", "success");
-                  } catch (err) {
-                    console.error("Failed to download report:", err);
-                    addToast("Failed to download report", "error");
-                  }
-                }}
-                className="btn-primary"
+            {/* DAILY REPORT GENERATOR */}
+            <div className="report-generator-card">
+              <h3 style={{ marginBottom: "1rem", fontSize: "1.1rem" }}>
+                📄 Daily Operations Report
+              </h3>
+              <div className="report-controls">
+                <div
+                  className="input-group"
+                  style={{ flex: 1, maxWidth: "300px" }}
+                >
+                  <label
+                    htmlFor="report-date"
+                    style={{ fontSize: "0.85rem", marginBottom: "0.5rem" }}
+                  >
+                    Select Report Date
+                  </label>
+                  <input
+                    id="report-date"
+                    type="date"
+                    value={reportDate}
+                    onChange={(e) => setReportDate(e.target.value)}
+                    style={{
+                      padding: "0.75rem",
+                      border: "1px solid #e5e7eb",
+                      borderRadius: "6px",
+                      fontSize: "0.9rem",
+                      width: "100%",
+                    }}
+                  />
+                </div>
+                <button
+                  onClick={handleDownloadReport}
+                  className="btn-primary"
+                  style={{
+                    background: "var(--sterling-accent)",
+                    color: "white",
+                    padding: "0.75rem 2rem",
+                    fontSize: "0.9rem",
+                    fontWeight: "900",
+                    border: "none",
+                    cursor: "pointer",
+                    textTransform: "uppercase",
+                    letterSpacing: "0.1em",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    borderRadius: "6px",
+                  }}
+                >
+                  <Download size={18} />
+                  DOWNLOAD PDF
+                </button>
+              </div>
+              <p
                 style={{
-                  background: "var(--sterling-accent)",
-                  color: "white",
-                  padding: "1rem 2rem",
-                  fontSize: "0.9rem",
-                  fontWeight: "900",
-                  border: "none",
-                  cursor: "pointer",
-                  textTransform: "uppercase",
-                  letterSpacing: "0.1em",
+                  fontSize: "0.8rem",
+                  color: "#757575",
+                  marginTop: "1rem",
                 }}
               >
-                📄 DOWNLOAD TODAY'S REPORT
-              </button>
+                Generates a comprehensive PDF with timeline schedule, room
+                assignments, and guest counts.
+              </p>
             </div>
 
-            <div className="admin-stats-grid">
+            {/* STATS GRID */}
+            <div className="admin-stats-grid" style={{ marginTop: "2rem" }}>
               <div className="stat-card">
                 <div className="stat-icon">
                   <Users size={24} />
