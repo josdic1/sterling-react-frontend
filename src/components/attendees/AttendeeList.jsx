@@ -36,16 +36,26 @@ export function AttendeeList({ attendees, reservationId, onRemove }) {
               <td className="font-bold">
                 {attendee.member?.name || attendee.name}
                 {attendee.member?.relation && (
-                  <span className="text-small"> ({attendee.member.relation})</span>
+                  <span className="text-small">
+                    {" "}
+                    ({attendee.member.relation})
+                  </span>
                 )}
               </td>
               <td className="text-muted">
-                {attendee.member?.dietary_restrictions || attendee.dietary_restrictions || "None"}
+                {attendee.member?.dietary_restrictions ||
+                  attendee.dietary_restrictions ||
+                  "None"}
               </td>
               <td>
-                <button 
+                <button
                   className="btn-text-only"
-                  onClick={() => handleRemove(attendee.id, attendee.member?.name || attendee.name)}
+                  onClick={() =>
+                    handleRemove(
+                      attendee.id,
+                      attendee.member?.name || attendee.name,
+                    )
+                  }
                 >
                   Remove
                 </button>

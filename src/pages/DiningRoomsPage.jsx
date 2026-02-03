@@ -8,7 +8,11 @@ export function DiningRoomsPage() {
   return (
     <div className="container dashboard-section">
       <h1>Dining Rooms</h1>
-      {loading ? <p>Loading rooms...</p> : <DiningRoomList diningRooms={diningRooms} />}
+      {loading ? (
+        <p>Loading rooms...</p>
+      ) : (
+        <DiningRoomList diningRooms={diningRooms} />
+      )}
     </div>
   );
 }

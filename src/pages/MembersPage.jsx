@@ -11,14 +11,14 @@ export function MembersPage() {
     <div className="container dashboard-section">
       <header className="section-header">
         <h1>Family Ledger</h1>
-        <button onClick={() => navigate('/members/new')}>+ Add Member</button>
+        <button onClick={() => navigate("/members/new")}>+ Add Member</button>
       </header>
 
       {loading ? (
         <p className="loading-state">Syncing family records...</p>
       ) : (
         <div className="banking-grid">
-           <MemberList members={members} />
+          <MemberList members={members} />
         </div>
       )}
     </div>

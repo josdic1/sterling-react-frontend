@@ -6,7 +6,10 @@ export function MemberItem({ member }) {
   const { deleteMember } = useData();
 
   return (
-    <tr className="ledger-row" onClick={() => navigate(`/members/${member.id}/edit`)}>
+    <tr
+      className="ledger-row"
+      onClick={() => navigate(`/members/${member.id}/edit`)}
+    >
       <td className="font-bold">{member.name}</td>
       <td className="text-uppercase">{member.relation}</td>
       <td className="text-muted">
@@ -14,11 +17,12 @@ export function MemberItem({ member }) {
         {member.dietary_restrictions || "No restrictions listed"}
       </td>
       <td className="text-right">
-        <button 
+        <button
           className="btn-text-only"
           onClick={(e) => {
             e.stopPropagation();
-            if(window.confirm(`Archive ${member.name}?`)) deleteMember(member.id);
+            if (window.confirm(`Archive ${member.name}?`))
+              deleteMember(member.id);
           }}
         >
           Archive

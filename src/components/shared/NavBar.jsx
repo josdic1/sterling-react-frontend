@@ -1,4 +1,4 @@
-// src/components/shared/NavBar.jsx - FIXED VERSION
+// src/components/shared/NavBar.jsx
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
@@ -9,6 +9,7 @@ import {
   UserCheck,
   FileText,
   HelpCircle,
+  Shield,
 } from "lucide-react";
 
 export function NavBar() {
@@ -22,7 +23,6 @@ export function NavBar() {
   };
 
   const handleHelpClick = () => {
-    // Trigger the tutorial modal
     if (window.openTutorial) {
       window.openTutorial();
     }
@@ -74,6 +74,16 @@ export function NavBar() {
         >
           <FileText size={20} />
         </Link>
+        {/* ADMIN LINK - Only show if user is admin */}
+        {loggedIn && user?.is_admin && (
+          <Link
+            to="/admin"
+            className={`nav-link-with-tooltip admin-nav-link ${location.pathname === "/admin" ? "active" : ""}`}
+            data-tooltip="Admin Dashboard"
+          >
+            <Shield size={20} />
+          </Link>
+        )}
       </div>
 
       {/* 3. RIGHT: USER AREA + HELP BUTTON */}
@@ -115,7 +125,7 @@ export function NavBar() {
               <span
                 style={{ fontSize: "0.65rem", fontWeight: 900, color: "#888" }}
               >
-                AUTHORIZED:
+                {user.is_admin ? "ADMIN:" : "AUTHORIZED:"}
               </span>
               <span
                 className="user-name"
@@ -123,6 +133,13 @@ export function NavBar() {
               >
                 {user.name.toUpperCase()}
               </span>
+              {user.is_admin && (
+                <Shield
+                  size={14}
+                  style={{ color: "#eb5638", marginLeft: "4px" }}
+                  title="Admin User"
+                />
+              )}
             </div>
             <button
               onClick={handleLogout}

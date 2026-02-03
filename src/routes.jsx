@@ -1,4 +1,4 @@
-// src/routes.jsx - UPDATED VERSION (Wishlist removed)
+// src/routes.jsx - WITH ADMIN DASHBOARD
 import App from "./App.jsx";
 import { ErrorPage } from "./pages/ErrorPage.jsx";
 import { HomePage } from "./pages/HomePage.jsx";
@@ -13,6 +13,7 @@ import { ReservationsPage } from "./pages/ReservationsPage.jsx";
 import { ReservationDetailPage } from "./pages/ReservationDetailPage.jsx";
 import { ReservationForm } from "./components/reservations/ReservationForm.jsx";
 import { RulesPage } from "./pages/RulesPage.jsx";
+import { AdminPage } from "./pages/AdminPage.jsx";
 
 export const routes = [
   {
@@ -115,6 +116,16 @@ export const routes = [
         element: (
           <ProtectedRoutes>
             <ReservationForm />
+          </ProtectedRoutes>
+        ),
+      },
+
+      // ADMIN DASHBOARD - Only accessible to admin users
+      {
+        path: "admin",
+        element: (
+          <ProtectedRoutes>
+            <AdminPage />
           </ProtectedRoutes>
         ),
       },

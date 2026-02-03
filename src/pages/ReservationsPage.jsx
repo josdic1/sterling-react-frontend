@@ -11,11 +11,11 @@ export function ReservationsPage() {
     <section className="dashboard-section">
       <header className="section-header">
         <h2>Active Reservations</h2>
-        <button type="button" onClick={() => navigate('/reservations/new')}>
+        <button type="button" onClick={() => navigate("/reservations/new")}>
           + New Booking
         </button>
       </header>
-      
+
       {loading ? (
         <p className="loading-state">Updating Ledger...</p>
       ) : (

@@ -26,20 +26,17 @@ export function SaveFloater({ show, onDismiss }) {
         <span className="save-title">Changes Saved</span>
       </div>
       <div className="save-floater-actions">
-        <button 
+        <button
           onClick={() => {
             onDismiss();
             navigate("/");
-          }} 
+          }}
           className="btn-floater-home"
         >
           <Home size={18} />
           <span>Return Home</span>
         </button>
-        <button 
-          onClick={onDismiss} 
-          className="btn-floater-dismiss"
-        >
+        <button onClick={onDismiss} className="btn-floater-dismiss">
           Continue Editing
         </button>
       </div>

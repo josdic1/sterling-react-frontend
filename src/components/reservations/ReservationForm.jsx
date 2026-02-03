@@ -254,11 +254,13 @@ export function ReservationForm() {
               onChange={onChange}
             >
               <option value="">-- Select Room --</option>
-              {diningRooms.map((r) => (
-                <option key={r.id} value={r.id}>
-                  {r.name} (Cap {r.capacity})
-                </option>
-              ))}
+              {diningRooms
+                .filter((room) => room.is_active) // ← ADD THIS LINE
+                .map((room) => (
+                  <option key={room.id} value={room.id}>
+                    {room.name} - {room.capacity} seats
+                  </option>
+                ))}
             </select>
             {formErrors.dining_room_id && (
               <div className="error-text">

@@ -3,7 +3,8 @@ import { useData } from "../../hooks/useData";
 export function DiningRoomList() {
   const { diningRooms, loading } = useData();
 
-  if (loading) return <div className="loading-state">VERIFYING LOCATIONS...</div>;
+  if (loading)
+    return <div className="loading-state">VERIFYING LOCATIONS...</div>;
 
   return (
     <div className="container">

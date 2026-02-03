@@ -26,11 +26,11 @@ export function MemberList({ members }) {
             <td className="text-uppercase">{m.relation}</td>
             <td className="text-muted">{m.dietary_restrictions || "NONE"}</td>
             <td className="text-right">
-              <button 
+              <button
                 className="btn-text-only"
                 onClick={(e) => {
                   e.stopPropagation(); // Stops navigation to edit page
-                  if(window.confirm(`Archive ${m.name}?`)) deleteMember(m.id);
+                  if (window.confirm(`Archive ${m.name}?`)) deleteMember(m.id);
                 }}
               >
                 Archive
