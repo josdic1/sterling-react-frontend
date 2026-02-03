@@ -1,4 +1,4 @@
-// src/routes.jsx - WITH ADMIN DASHBOARD
+// src/routes.jsx
 import App from "./App.jsx";
 import { ErrorPage } from "./pages/ErrorPage.jsx";
 import { HomePage } from "./pages/HomePage.jsx";
@@ -12,6 +12,7 @@ import { TimeSlotsPage } from "./pages/TimeSlotsPage.jsx";
 import { ReservationsPage } from "./pages/ReservationsPage.jsx";
 import { ReservationDetailPage } from "./pages/ReservationDetailPage.jsx";
 import { ReservationForm } from "./components/reservations/ReservationForm.jsx";
+import { ReservationCalendar } from "./components/ReservationCalendar"; // Imported here
 import { RulesPage } from "./pages/RulesPage.jsx";
 import { AdminPage } from "./pages/AdminPage.jsx";
 
@@ -31,6 +32,17 @@ export const routes = [
       },
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignupPage /> },
+
+      // --- NEW CALENDAR ROUTE ---
+      {
+        path: "calendar",
+        element: (
+          <ProtectedRoutes>
+            <ReservationCalendar />
+          </ProtectedRoutes>
+        ),
+      },
+      // --------------------------
 
       // Members
       {

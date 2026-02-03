@@ -2451,3 +2451,110 @@ button:active {
     width: 100%;
   }
 }
+
+/* ReservationCalendar.css */
+
+.calendar-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  padding: 2rem;
+  background: white;
+  border-radius: 8px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  max-width: 500px;
+  margin: 2rem auto;
+}
+
+/* Override React-Calendar defaults */
+.react-calendar {
+  width: 100%;
+  border: none;
+  font-family: "Helvetica", sans-serif;
+}
+
+/* Header (Month/Year) */
+.react-calendar__navigation button {
+  color: #121212;
+  font-size: 1.1rem;
+  font-weight: bold;
+}
+
+/* Selected Day (Orange background) */
+.react-calendar__tile--active {
+  background: #eb5638 !important;
+  color: white !important;
+  border-radius: 6px;
+}
+
+/* Hover state */
+.react-calendar__tile:hover {
+  background: #f0f0f0;
+  border-radius: 6px;
+}
+
+/* Today's date */
+.react-calendar__tile--now {
+  background: #fff5f3;
+  color: #eb5638;
+}
+
+.calendar-actions {
+  margin-top: 1.5rem;
+  text-align: center;
+  width: 100%;
+}
+
+.calendar-actions p {
+  margin-bottom: 1rem;
+  font-weight: 500;
+  color: #757575;
+}
+
+.btn-primary {
+  background: #eb5638;
+  color: white;
+  border: none;
+  padding: 0.75rem 1.5rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 4px;
+  cursor: pointer;
+  width: 100%;
+}
+
+.btn-primary:hover {
+  background: #d44e32;
+}
+
+/* The red circle badge showing count */
+.calendar-badge {
+  background-color: #121212; /* Dark badge */
+  color: white;
+  border-radius: 50%;
+  width: 18px;
+  height: 18px;
+  font-size: 0.7rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: absolute;
+  top: 2px;
+  right: 2px;
+}
+
+/* Make sure the tile is relative so the badge sits in the corner */
+.react-calendar__tile {
+  position: relative;
+  height: 80px; /* Make cells taller to fit badge nicely */
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  padding-top: 10px !important;
+}
+
+.admin-day-summary {
+  margin-top: 1rem;
+  font-weight: bold;
+  color: #eb5638;
+}

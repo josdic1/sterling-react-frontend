@@ -1,4 +1,3 @@
-// src/providers/DataProvider.jsx
 import React, { useState, useEffect, useContext, useCallback } from "react";
 import { DataContext } from "../contexts/DataContext";
 import { AuthContext } from "../contexts/AuthContext";
@@ -8,7 +7,6 @@ import { asArrayOfObjects } from "../utils/safe";
 const CACHE_TTL_MS = 5 * 60 * 1000;
 
 // IMPORTANT: make this match your backend.
-// If your backend uses /dining-rooms/ then change this to "/dining-rooms/"
 const DINING_ROOMS_ENDPOINT = "/dining-rooms/";
 
 export function DataProvider({ children }) {
@@ -127,10 +125,11 @@ export function DataProvider({ children }) {
           return next;
         });
 
-        return data;
+        return data; // Return full object on success
       } catch (err) {
         console.error("createReservation error:", err);
-        return null;
+        // THROW ERROR so UI can catch it and show toast
+        throw err;
       }
     },
     [diningRooms, members, writeCache],
@@ -152,7 +151,7 @@ export function DataProvider({ children }) {
         return data;
       } catch (err) {
         console.error("updateReservation error:", err);
-        return null;
+        throw err; // Allow UI to handle specific error
       }
     },
     [diningRooms, members, writeCache],
@@ -173,7 +172,7 @@ export function DataProvider({ children }) {
         return true;
       } catch (err) {
         console.error("deleteReservation error:", err);
-        return false;
+        throw err;
       }
     },
     [diningRooms, members, writeCache],
@@ -215,7 +214,8 @@ export function DataProvider({ children }) {
         return { success: true, data: newAttendee };
       } catch (err) {
         console.error("addAttendee error:", err);
-        return { success: false };
+        // RETURN ERROR MESSAGE FOR TOAST
+        return { success: false, error: err.message };
       }
     },
     [diningRooms, members, writeCache],
@@ -243,7 +243,7 @@ export function DataProvider({ children }) {
         return { success: true };
       } catch (err) {
         console.error("removeAttendee error:", err);
-        return { success: false };
+        return { success: false, error: err.message };
       }
     },
     [diningRooms, members, writeCache],
@@ -255,9 +255,6 @@ export function DataProvider({ children }) {
     async (memberData) => {
       try {
         const newMember = await api.post("/members/", memberData);
-        if (!newMember || typeof newMember !== "object") {
-          return { success: false };
-        }
 
         setMembers((prev) => {
           const safePrev = asArrayOfObjects(prev);
@@ -269,7 +266,7 @@ export function DataProvider({ children }) {
         return { success: true, data: newMember };
       } catch (err) {
         console.error("createMember error:", err);
-        return { success: false };
+        return { success: false, error: err.message };
       }
     },
     [diningRooms, reservations, writeCache],
@@ -282,9 +279,6 @@ export function DataProvider({ children }) {
           `/members/${memberId}/`,
           updateData,
         );
-        if (!updatedMember || typeof updatedMember !== "object") {
-          return { success: false };
-        }
 
         setMembers((prev) => {
           const safePrev = asArrayOfObjects(prev);
@@ -298,7 +292,7 @@ export function DataProvider({ children }) {
         return { success: true, data: updatedMember };
       } catch (err) {
         console.error("updateMember error:", err);
-        return { success: false };
+        return { success: false, error: err.message };
       }
     },
     [diningRooms, reservations, writeCache],
@@ -319,7 +313,7 @@ export function DataProvider({ children }) {
         return { success: true };
       } catch (err) {
         console.error("deleteMember error:", err);
-        return { success: false };
+        return { success: false, error: err.message };
       }
     },
     [diningRooms, reservations, writeCache],
@@ -394,7 +388,6 @@ export function DataProvider({ children }) {
   const adminUpdateDiningRoom = useCallback(
     async (roomId, updateData) => {
       try {
-        // keep your current admin endpoint as-is
         const updated = await api.patch(
           `/admin/dining-rooms/${roomId}/`,
           updateData,
@@ -410,7 +403,7 @@ export function DataProvider({ children }) {
         return { success: true, data: updated };
       } catch (err) {
         console.error("adminUpdateDiningRoom error:", err);
-        return { success: false };
+        return { success: false, error: err.message };
       }
     },
     [members, reservations, writeCache],

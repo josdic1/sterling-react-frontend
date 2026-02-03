@@ -198,32 +198,52 @@ export function ReservationForm() {
   const onSubmit = async (e) => {
     e.preventDefault();
 
+    // 1. Validation
     const errors = validate();
     if (Object.keys(errors).length) {
       setFormErrors(errors);
       return;
     }
 
+    // 2. Prepare Data
     const payload = {
       ...formData,
       dining_room_id: parseInt(formData.dining_room_id),
     };
 
-    const result = isEditMode
-      ? await updateReservation(parseInt(id), payload)
-      : await createReservation(payload);
+    try {
+      // 3. Make the API Call
+      const result = isEditMode
+        ? await updateReservation(parseInt(id), payload)
+        : await createReservation(payload);
 
-    if (!result) {
-      addToast("Failed to save reservation", "error");
-      return;
+      // 4. Check for failure (if your hook returns null on error)
+      if (!result) {
+        addToast("Failed to save reservation", "error");
+        return;
+      }
+
+      // 5. Clean up drafts
+      if (!isEditMode) localStorage.removeItem("reservation_draft");
+
+      // 6. Show Success Message
+      addToast(
+        isEditMode ? "Reservation updated" : "Reservation created",
+        "success",
+      );
+
+      // 7. ROUTE TO DETAIL PAGE (The Fix)
+      // Use 'result' here, because that is where the API response is stored
+      if (result?.id) {
+        navigate(`/reservations/${result.id}`);
+      }
+    } catch (error) {
+      console.error("Submission error:", error);
+
+      // --- THE FIX ---
+      // Use error.message coming from your api.js
+      addToast(error.message || "An unexpected error occurred", "error");
     }
-
-    if (!isEditMode) localStorage.removeItem("reservation_draft");
-    addToast(
-      isEditMode ? "Reservation updated" : "Reservation created",
-      "success",
-    );
-    navigate("/");
   };
 
   /* ---------- RENDER ---------- */

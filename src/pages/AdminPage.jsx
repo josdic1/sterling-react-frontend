@@ -1,9 +1,9 @@
-// src/pages/AdminPage.jsx
 import { useState, useEffect } from "react";
 import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
 import { useNavigate } from "react-router-dom";
 import { api, retryRequest } from "../utils/api";
+import { ReservationCalendar } from "../components/ReservationCalendar";
 import { useToastTrigger } from "../hooks/useToast";
 import {
   Users,
@@ -14,6 +14,7 @@ import {
   Edit2,
   Save,
   X,
+  List,
   Trash2,
   TrendingUp,
   Download,
@@ -57,7 +58,7 @@ export function AdminPage() {
   const [editingRule, setEditingRule] = useState(null);
   const [editingRoom, setEditingRoom] = useState(null);
 
-  // ADDED: Report date state
+  // Report date state
   const [reportDate, setReportDate] = useState(
     new Date().toISOString().split("T")[0],
   );
@@ -70,7 +71,7 @@ export function AdminPage() {
       setStats(data);
     } catch (err) {
       console.error("Failed to fetch stats:", err);
-      addToast("Failed to load statistics", "error");
+      addToast(err.message || "Failed to load statistics", "error");
     }
   };
 
@@ -81,7 +82,7 @@ export function AdminPage() {
       setAllUsers(data);
     } catch (err) {
       console.error("Failed to fetch users:", err);
-      addToast("Failed to load users", "error");
+      addToast(err.message || "Failed to load users", "error");
     } finally {
       setLoading(false);
     }
@@ -94,7 +95,7 @@ export function AdminPage() {
       setAllReservations(data);
     } catch (err) {
       console.error("Failed to fetch reservations:", err);
-      addToast("Failed to load reservations", "error");
+      addToast(err.message || "Failed to load reservations", "error");
     } finally {
       setLoading(false);
     }
@@ -107,7 +108,7 @@ export function AdminPage() {
       setAllMembers(data);
     } catch (err) {
       console.error("Failed to fetch members:", err);
-      addToast("Failed to load members", "error");
+      addToast(err.message || "Failed to load members", "error");
     } finally {
       setLoading(false);
     }
@@ -120,7 +121,7 @@ export function AdminPage() {
       setAllRules(data);
     } catch (err) {
       console.error("Failed to fetch rules:", err);
-      addToast("Failed to load rules", "error");
+      addToast(err.message || "Failed to load rules", "error");
     } finally {
       setLoading(false);
     }
@@ -132,7 +133,7 @@ export function AdminPage() {
       await fetchDiningRooms();
     } catch (err) {
       console.error("Failed to fetch rooms:", err);
-      addToast("Failed to load rooms", "error");
+      addToast(err.message || "Failed to load rooms", "error");
     } finally {
       setLoading(false);
     }
@@ -183,6 +184,7 @@ export function AdminPage() {
         fetchAllUsers();
         break;
       case "reservations":
+      case "calendar":
         fetchAllReservations();
         fetchAllRooms();
         break;
@@ -211,7 +213,7 @@ export function AdminPage() {
       fetchAllRules();
     } catch (err) {
       console.error("Failed to update rule:", err);
-      addToast("Failed to update rule", "error");
+      addToast(err.message || "Failed to update rule", "error");
     }
   };
 
@@ -221,7 +223,7 @@ export function AdminPage() {
     const result = await adminUpdateDiningRoom(roomId, updates);
 
     if (!result?.success) {
-      addToast("Failed to update room", "error");
+      addToast(result?.error || "Failed to update room", "error");
       return;
     }
 
@@ -242,7 +244,7 @@ export function AdminPage() {
       fetchAllReservations();
     } catch (err) {
       console.error("Failed to delete reservation:", err);
-      addToast("Failed to delete reservation", "error");
+      addToast(err.message || "Failed to delete reservation", "error");
     }
   };
 
@@ -257,7 +259,7 @@ export function AdminPage() {
       fetchAllMembers();
     } catch (err) {
       console.error("Failed to delete member:", err);
-      addToast("Failed to delete member", "error");
+      addToast(err.message || "Failed to delete member", "error");
     }
   };
 
@@ -312,13 +314,23 @@ export function AdminPage() {
           <TrendingUp size={16} />
           <span>Stats</span>
         </button>
+
+        <button
+          className={`admin-tab ${activeTab === "calendar" ? "active" : ""}`}
+          onClick={() => setActiveTab("calendar")}
+        >
+          <Calendar size={16} />
+          <span>Calendar</span>
+        </button>
+
         <button
           className={`admin-tab ${activeTab === "reservations" ? "active" : ""}`}
           onClick={() => setActiveTab("reservations")}
         >
-          <Calendar size={16} />
-          <span>All Reservations</span>
+          <List size={16} />
+          <span>List View</span>
         </button>
+
         <button
           className={`admin-tab ${activeTab === "members" ? "active" : ""}`}
           onClick={() => setActiveTab("members")}
@@ -460,6 +472,22 @@ export function AdminPage() {
                 </div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* CALENDAR TAB */}
+        {activeTab === "calendar" && (
+          <div>
+            {loading ? (
+              <div className="loading-state">Loading calendar...</div>
+            ) : (
+              <div style={{ display: "flex", justifyContent: "center" }}>
+                <ReservationCalendar
+                  reservations={allReservations}
+                  isAdmin={true}
+                />
+              </div>
+            )}
           </div>
         )}
 
