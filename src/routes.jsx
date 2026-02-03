@@ -12,7 +12,7 @@ import { TimeSlotsPage } from "./pages/TimeSlotsPage.jsx";
 import { ReservationsPage } from "./pages/ReservationsPage.jsx";
 import { ReservationDetailPage } from "./pages/ReservationDetailPage.jsx";
 import { ReservationForm } from "./components/reservations/ReservationForm.jsx";
-import { ReservationCalendar } from "./components/ReservationCalendar"; // Imported here
+import { ReservationCalendar } from "./components/reservations/ReservationCalendar.jsx"; // Imported here
 import { RulesPage } from "./pages/RulesPage.jsx";
 import { AdminPage } from "./pages/AdminPage.jsx";
 
