@@ -1,4 +1,4 @@
-// src/utils/api.js - FIXED VERSION (Handles DELETE responses)
+// src/utils/api.js
 
 export const getApiUrl = () => {
   const apiUrl = import.meta.env.VITE_API_URL;
@@ -12,7 +12,7 @@ export const buildApiUrl = (path) => {
   return `${baseUrl}${cleanPath}`;
 };
 
-// 1. TIMEOUT HELPER
+// TIMEOUT HELPER
 export const fetchWithTimeout = async (url, options = {}, timeout = 10000) => {
   const controller = new AbortController();
   const timeoutId = setTimeout(() => controller.abort(), timeout);
@@ -33,7 +33,34 @@ export const fetchWithTimeout = async (url, options = {}, timeout = 10000) => {
   }
 };
 
-// 2. MAIN REQUEST FUNCTION (FIXED: Handles empty DELETE responses)
+// Normalize FastAPI error shapes into a string
+const extractErrorMessage = (errorData, fallback) => {
+  const d = errorData?.detail;
+
+  if (typeof d === "string" && d.trim()) return d;
+
+  // FastAPI / Pydantic validation errors often come as an array
+  if (Array.isArray(d) && d.length > 0) {
+    // Try the common shape: [{ loc: [...], msg: "..." }, ...]
+    const msgs = d
+      .map((x) => x?.msg)
+      .filter((m) => typeof m === "string" && m.trim());
+    if (msgs.length) return msgs.join(" | ");
+    // fallback if array but unknown shape
+    return JSON.stringify(d);
+  }
+
+  // Sometimes detail is an object
+  if (d && typeof d === "object") return JSON.stringify(d);
+
+  // Other possible top-level messages
+  if (typeof errorData?.message === "string" && errorData.message.trim()) {
+    return errorData.message;
+  }
+
+  return fallback;
+};
+
 export const apiRequest = async (path, options = {}) => {
   const url = buildApiUrl(path);
   const token = localStorage.getItem("token");
@@ -46,6 +73,18 @@ export const apiRequest = async (path, options = {}) => {
 
   const response = await fetchWithTimeout(url, { ...options, headers });
 
+  // Parse JSON safely (even for errors)
+  const contentType = response.headers.get("content-type") || "";
+  let data = null;
+
+  if (contentType.includes("application/json")) {
+    const text = await response.text();
+    data = text ? JSON.parse(text) : null;
+  } else {
+    // non-json response (rare)
+    data = null;
+  }
+
   if (response.status === 401) {
     localStorage.removeItem("token");
     window.location.href = "/login";
@@ -53,43 +92,39 @@ export const apiRequest = async (path, options = {}) => {
   }
 
   if (!response.ok) {
-    const errorData = await response.json().catch(() => ({}));
-    throw new Error(errorData.detail || `API Error: ${response.status}`);
+    const msg = extractErrorMessage(
+      data,
+      `API Error: ${response.status} ${response.statusText}`,
+    );
+
+    // Helpful during debugging:
+    console.error("API ERROR", {
+      url,
+      status: response.status,
+      statusText: response.statusText,
+      response: data,
+    });
+
+    throw new Error(msg);
   }
 
-  // FIXED: Handle DELETE responses (204 No Content) and empty responses
-  if (
-    response.status === 204 ||
-    response.headers.get("content-length") === "0"
-  ) {
-    return null;
-  }
+  // Handle empty responses (DELETE 204, etc)
+  if (response.status === 204) return null;
 
-  // Only parse JSON if there's actual content
-  const contentType = response.headers.get("content-type");
-  if (contentType && contentType.includes("application/json")) {
-    const text = await response.text();
-    return text ? JSON.parse(text) : null;
-  }
-
-  return null;
+  return data;
 };
 
-// 3. RETRY HELPER
 export const retryRequest = async (fn, maxRetries = 3) => {
   for (let i = 0; i < maxRetries; i++) {
     try {
       return await fn();
     } catch (err) {
       if (i === maxRetries - 1) throw err;
-
-      const waitTime = 1000 * (i + 1);
-      await new Promise((resolve) => setTimeout(resolve, waitTime));
+      await new Promise((r) => setTimeout(r, 1000 * (i + 1)));
     }
   }
 };
 
-// 4. API VERBS
 export const api = {
   get: (path) => apiRequest(path, { method: "GET" }),
   post: (path, data) =>
