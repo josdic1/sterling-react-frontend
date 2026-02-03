@@ -2,7 +2,7 @@ import { useState } from "react";
 import Calendar from "react-calendar";
 import { useNavigate } from "react-router-dom";
 import "react-calendar/dist/Calendar.css";
-import "./ReservationCalendar.css";
+
 
 export function ReservationCalendar({ reservations = [], isAdmin = false }) {
   const [date, setDate] = useState(new Date());
