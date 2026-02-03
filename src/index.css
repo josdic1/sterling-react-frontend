@@ -2452,51 +2452,184 @@ button:active {
   }
 }
 
-/* ReservationCalendar.css */
+/* ==================== CALENDAR SYSTEM ==================== */
 
+/* 1. The Wrapper for the Page View */
+.calendar-page-wrapper {
+  background: white;
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+  margin-bottom: 2rem;
+  border: 1px solid var(--border-color);
+}
+
+/* 2. The Inner Container (Component Level) */
 .calendar-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 2rem;
-  background: white;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  max-width: 500px;
-  margin: 2rem auto;
-}
-
-/* Override React-Calendar defaults */
-.react-calendar {
   width: 100%;
-  border: none;
-  font-family: "Helvetica", sans-serif;
 }
 
-/* Header (Month/Year) */
+/* 3. React-Calendar Overrides (The Visuals) */
+.react-calendar {
+  width: 100% !important;
+  max-width: 100% !important;
+  border: none !important;
+  font-family: "Inter", sans-serif !important;
+  line-height: 1.125em;
+  background: transparent !important;
+}
+
+/* Navigation Header (Month/Year) */
+.react-calendar__navigation {
+  display: flex;
+  margin-bottom: 1.5rem;
+  height: 44px;
+}
+
 .react-calendar__navigation button {
-  color: #121212;
+  min-width: 44px;
+  background: none;
   font-size: 1.1rem;
-  font-weight: bold;
+  font-weight: 800;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--banking-black);
+  border-radius: 8px;
+  margin: 0 2px;
 }
 
-/* Selected Day (Orange background) */
-.react-calendar__tile--active {
-  background: #eb5638 !important;
-  color: white !important;
+.react-calendar__navigation button:enabled:hover,
+.react-calendar__navigation button:enabled:focus {
+  background-color: var(--off-white);
+  color: var(--sterling-accent);
+}
+
+/* Weekdays (Mon, Tue...) */
+.react-calendar__month-view__weekdays {
+  text-align: center;
+  text-transform: uppercase;
+  font-weight: 700;
+  font-size: 0.7rem;
+  color: var(--banking-grey);
+  margin-bottom: 0.75rem;
+  letter-spacing: 0.1em;
+  text-decoration: none;
+}
+
+.react-calendar__month-view__weekdays__weekday abbr {
+  text-decoration: none;
+}
+
+/* The Day Tiles */
+.react-calendar__tile {
+  height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: flex-start;
+  padding: 8px !important;
   border-radius: 6px;
+  position: relative;
+  font-weight: 600;
+  font-size: 0.9rem;
+  transition: all 0.2s ease;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--banking-black);
 }
 
-/* Hover state */
-.react-calendar__tile:hover {
-  background: #f0f0f0;
-  border-radius: 6px;
+/* Remove underlines from dates */
+.react-calendar__tile abbr {
+  text-decoration: none;
+  margin-bottom: 4px;
+  display: block;
 }
 
-/* Today's date */
+/* Hover Effects */
+.react-calendar__tile:enabled:hover,
+.react-calendar__tile:enabled:focus {
+  background-color: var(--off-white);
+  border-color: var(--border-color);
+}
+
+/* Today's Date */
 .react-calendar__tile--now {
-  background: #fff5f3;
-  color: #eb5638;
+  background: #fff5f3 !important;
+  color: var(--sterling-accent) !important;
+  font-weight: 800;
+}
+
+/* Selected Date */
+.react-calendar__tile--active {
+  background: var(--sterling-accent) !important;
+  color: white !important;
+  box-shadow: 0 4px 10px rgba(235, 86, 56, 0.3);
+}
+
+.react-calendar__tile--active:enabled:hover,
+.react-calendar__tile--active:enabled:focus {
+  background: #d44e32 !important;
+}
+
+/* 4. Badges (The Red/Black Dots) */
+.calendar-badge {
+  background-color: var(--banking-black);
+  color: white;
+  border-radius: 12px;
+  padding: 2px 8px;
+  font-size: 0.6rem;
+  font-weight: 800;
+  margin-top: auto; /* Push to bottom */
+  align-self: flex-end;
+  width: 100%;
+  text-align: center;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.react-calendar__tile--active .calendar-badge {
+  background-color: white;
+  color: var(--sterling-accent);
+}
+
+/* 5. Legend & Actions */
+.calendar-legend {
+  display: flex;
+  gap: 1.5rem;
+  justify-content: center;
+  margin-top: 1.5rem;
+  flex-wrap: wrap;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--banking-grey);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 50%;
+  margin-right: 8px;
+  display: inline-block;
+}
+
+.dot-booking {
+  background-color: var(--banking-black);
+}
+.dot-today {
+  background-color: #fff5f3;
+  border: 1px solid var(--sterling-accent);
+}
+.dot-selected {
+  background-color: var(--sterling-accent);
 }
 
 .calendar-actions {
@@ -2506,55 +2639,18 @@ button:active {
 }
 
 .calendar-actions p {
+  font-weight: 600;
+  color: var(--banking-grey);
   margin-bottom: 1rem;
-  font-weight: 500;
-  color: #757575;
 }
 
-.btn-primary {
-  background: #eb5638;
-  color: white;
-  border: none;
-  padding: 0.75rem 1.5rem;
-  font-size: 1rem;
-  font-weight: bold;
-  border-radius: 4px;
-  cursor: pointer;
-  width: 100%;
-}
+/* Mobile Adjustments */
+@media (max-width: 600px) {
+  .react-calendar__tile {
+    height: 65px;
+  }
 
-.btn-primary:hover {
-  background: #d44e32;
-}
-
-/* The red circle badge showing count */
-.calendar-badge {
-  background-color: #121212; /* Dark badge */
-  color: white;
-  border-radius: 50%;
-  width: 18px;
-  height: 18px;
-  font-size: 0.7rem;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: absolute;
-  top: 2px;
-  right: 2px;
-}
-
-/* Make sure the tile is relative so the badge sits in the corner */
-.react-calendar__tile {
-  position: relative;
-  height: 80px; /* Make cells taller to fit badge nicely */
-  display: flex;
-  flex-direction: column;
-  justify-content: flex-start;
-  padding-top: 10px !important;
-}
-
-.admin-day-summary {
-  margin-top: 1rem;
-  font-weight: bold;
-  color: #eb5638;
+  .calendar-page-wrapper {
+    padding: 1rem;
+  }
 }
