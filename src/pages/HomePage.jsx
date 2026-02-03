@@ -26,14 +26,20 @@ export function HomePage() {
         <header className="section-header">
           <h2>Active Reservations</h2>
         </header>
-        <ReservationList reservations={reservations} />
+        <ReservationList
+          reservations={
+            Array.isArray(reservations) ? reservations.filter(Boolean) : []
+          }
+        />
       </section>
 
       <section className="dashboard-section">
         <header className="section-header">
           <h2>Family Ledger</h2>
         </header>
-        <MemberList members={members} />
+        <MemberList
+          members={Array.isArray(members) ? members.filter(Boolean) : []}
+        />
       </section>
 
       {/* Floating Action Button for Mobile */}

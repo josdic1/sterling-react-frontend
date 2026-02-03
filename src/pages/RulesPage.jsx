@@ -18,8 +18,7 @@ export function RulesPage() {
         // UPDATED: Using retryRequest + api.get
         // This makes the page robust against network instability
         const data = await retryRequest(() => api.get("/rules/"));
-
-        setRules(data);
+        setRules(Array.isArray(data) ? data.filter(Boolean) : []);
       } catch (err) {
         console.error("Failed to load rules:", err);
         setError("System unavailable. Please check your connection.");
@@ -85,11 +84,11 @@ export function RulesPage() {
         </p>
       </div>
       <div className="rules-grid">
-        {rules.map((rule) => (
-          <div key={rule.id} className="rule-card">
+        {(Array.isArray(rules) ? rules : []).filter(Boolean).map((rule) => (
+          <div key={rule.id ?? rule.code ?? rule.name} className="rule-card">
             <div className="rule-icon">{getRuleIcon(rule.code)}</div>
             <div className="rule-content">
-              <h3>{rule.name}</h3>
+              <h3>{rule.name ?? "(unnamed rule)"}</h3>
               <p className="rule-desc">
                 {rule.description || "Standard club policy applies."}
               </p>

@@ -18,7 +18,9 @@ export function MembersPage() {
         <p className="loading-state">Syncing family records...</p>
       ) : (
         <div className="banking-grid">
-          <MemberList members={members} />
+          <MemberList
+            members={Array.isArray(members) ? members.filter(Boolean) : []}
+          />
         </div>
       )}
     </div>

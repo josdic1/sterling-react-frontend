@@ -1,16 +1,12 @@
-// src/components/attendees/AttendeeList.jsx
 import { useData } from "../../hooks/useData";
 
 export function AttendeeList({ attendees, reservationId, onRemove }) {
   const { removeAttendee } = useData();
 
-  // Fallback function if onRemove not provided
   const handleRemove = async (attendeeId, attendeeName) => {
     if (onRemove) {
-      // Use the provided callback
       await onRemove(attendeeId, attendeeName);
     } else {
-      // Fallback to direct removal (no toast)
       await removeAttendee(reservationId, attendeeId);
     }
   };
@@ -31,37 +27,41 @@ export function AttendeeList({ attendees, reservationId, onRemove }) {
           </tr>
         </thead>
         <tbody>
-          {attendees.map((attendee) => (
-            <tr key={attendee.id}>
-              <td className="font-bold">
-                {attendee.member?.name || attendee.name}
-                {attendee.member?.relation && (
-                  <span className="text-small">
-                    {" "}
-                    ({attendee.member.relation})
-                  </span>
-                )}
-              </td>
-              <td className="text-muted">
-                {attendee.member?.dietary_restrictions ||
-                  attendee.dietary_restrictions ||
-                  "None"}
-              </td>
-              <td>
-                <button
-                  className="btn-text-only"
-                  onClick={() =>
-                    handleRemove(
-                      attendee.id,
-                      attendee.member?.name || attendee.name,
-                    )
-                  }
-                >
-                  Remove
-                </button>
-              </td>
-            </tr>
-          ))}
+          {attendees.map((attendee) => {
+            // DEFENSIVE: Ensure attendee exists
+            if (!attendee) return null;
+
+            // DEFENSIVE: safe name extraction
+            const memberName = attendee.member ? attendee.member.name : null;
+            const displayName = memberName || attendee.name || "Unknown Guest";
+
+            // DEFENSIVE: safe relation extraction
+            const relation = attendee.member?.relation;
+
+            return (
+              <tr key={attendee.id || Math.random()}>
+                <td className="font-bold">
+                  {displayName}
+                  {relation && (
+                    <span className="text-small"> ({relation})</span>
+                  )}
+                </td>
+                <td className="text-muted">
+                  {attendee.member?.dietary_restrictions ||
+                    attendee.dietary_restrictions ||
+                    "None"}
+                </td>
+                <td>
+                  <button
+                    className="btn-text-only"
+                    onClick={() => handleRemove(attendee.id, displayName)}
+                  >
+                    Remove
+                  </button>
+                </td>
+              </tr>
+            );
+          })}
         </tbody>
       </table>
     </div>

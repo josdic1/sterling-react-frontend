@@ -532,11 +532,13 @@ export function AdminPage() {
                 className="filter-select"
               >
                 <option value="all">All Rooms</option>
-                {diningRooms.map((room) => (
-                  <option key={room.id} value={room.id}>
-                    {room.name}
-                  </option>
-                ))}
+                {(Array.isArray(diningRooms) ? diningRooms : [])
+                  .filter(Boolean)
+                  .map((room) => (
+                    <option key={room.id} value={room.id}>
+                      {room.name ?? "(no name)"}
+                    </option>
+                  ))}
               </select>
             </div>
 

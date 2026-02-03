@@ -5,7 +5,11 @@ export function MemberList({ members }) {
   const navigate = useNavigate();
   const { deleteMember } = useData();
 
-  if (!members || members.length === 0) {
+  const safeMembers = Array.isArray(members)
+    ? members.filter((m) => m && typeof m === "object")
+    : [];
+
+  if (safeMembers.length === 0) {
     return <p className="text-muted">No family records found.</p>;
   }
 
@@ -19,25 +23,36 @@ export function MemberList({ members }) {
           <th className="text-right">Actions</th>
         </tr>
       </thead>
+
       <tbody>
-        {members.map((m) => (
-          <tr key={m.id} onClick={() => navigate(`/members/${m.id}/edit`)}>
-            <td className="font-bold">{m.name.toUpperCase()}</td>
-            <td className="text-uppercase">{m.relation}</td>
-            <td className="text-muted">{m.dietary_restrictions || "NONE"}</td>
-            <td className="text-right">
-              <button
-                className="btn-text-only"
-                onClick={(e) => {
-                  e.stopPropagation(); // Stops navigation to edit page
-                  if (window.confirm(`Archive ${m.name}?`)) deleteMember(m.id);
-                }}
-              >
-                Archive
-              </button>
-            </td>
-          </tr>
-        ))}
+        {safeMembers.map((m) => {
+          const name = m.name ?? "(unnamed)";
+          return (
+            <tr
+              key={m.id ?? name}
+              onClick={() => {
+                if (m.id != null) navigate(`/members/${m.id}/edit`);
+              }}
+              style={{ cursor: m.id != null ? "pointer" : "default" }}
+            >
+              <td className="font-bold">{String(name).toUpperCase()}</td>
+              <td className="text-uppercase">{m.relation ?? "—"}</td>
+              <td className="text-muted">{m.dietary_restrictions || "NONE"}</td>
+              <td className="text-right">
+                <button
+                  className="btn-text-only"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (m.id == null) return;
+                    if (window.confirm(`Archive ${name}?`)) deleteMember(m.id);
+                  }}
+                >
+                  Archive
+                </button>
+              </td>
+            </tr>
+          );
+        })}
       </tbody>
     </table>
   );
