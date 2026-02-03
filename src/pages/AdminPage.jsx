@@ -3,7 +3,7 @@ import { useAuth } from "../hooks/useAuth";
 import { useData } from "../hooks/useData";
 import { useNavigate } from "react-router-dom";
 import { api, retryRequest } from "../utils/api";
-import { ReservationCalendar } from "../components/ReservationCalendar";
+import { ReservationCalendar } from "../components/reservations/ReservationCalendar";
 import { useToastTrigger } from "../hooks/useToast";
 import {
   Users,
