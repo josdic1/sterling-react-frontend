@@ -12,9 +12,9 @@ import { TimeSlotsPage } from "./pages/TimeSlotsPage.jsx";
 import { ReservationsPage } from "./pages/ReservationsPage.jsx";
 import { ReservationDetailPage } from "./pages/ReservationDetailPage.jsx";
 import { ReservationForm } from "./components/reservations/ReservationForm.jsx";
-import { ReservationCalendar } from "./components/reservations/ReservationCalendar.jsx"; // Imported here
 import { RulesPage } from "./pages/RulesPage.jsx";
 import { AdminPage } from "./pages/AdminPage.jsx";
+import { CalendarPage } from "./pages/CalendarPage.jsx"; // <--- IMPORT THE PAGE, NOT THE COMPONENT
 
 export const routes = [
   {
@@ -33,16 +33,16 @@ export const routes = [
       { path: "login", element: <LoginPage /> },
       { path: "signup", element: <SignupPage /> },
 
-      // --- NEW CALENDAR ROUTE ---
+      // --- CORRECT CALENDAR ROUTE ---
       {
         path: "calendar",
         element: (
           <ProtectedRoutes>
-            <ReservationCalendar />
+            <CalendarPage />
           </ProtectedRoutes>
         ),
       },
-      // --------------------------
+      // -----------------------------
 
       // Members
       {
@@ -132,7 +132,7 @@ export const routes = [
         ),
       },
 
-      // ADMIN DASHBOARD - Only accessible to admin users
+      // ADMIN DASHBOARD
       {
         path: "admin",
         element: (

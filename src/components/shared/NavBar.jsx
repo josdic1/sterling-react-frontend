@@ -1,14 +1,13 @@
-// src/components/shared/NavBar.jsx
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useAuth } from "../../hooks/useAuth";
 import {
   Home,
   Calendar,
+  PlusCircle, // <--- NEW ICON for "New Reservation"
   Users,
   LogOut,
   UserCheck,
   FileText,
-  HelpCircle,
   Shield,
 } from "lucide-react";
 
@@ -53,13 +52,26 @@ export function NavBar() {
         >
           <Home size={20} />
         </Link>
+
+        {/* --- NEW CALENDAR LINK --- */}
+        <Link
+          to="/calendar"
+          className={`nav-link-with-tooltip ${location.pathname === "/calendar" ? "active" : ""}`}
+          data-tooltip="Calendar"
+        >
+          <Calendar size={20} />
+        </Link>
+        {/* ------------------------- */}
+
         <Link
           to="/reservations/new"
           className={`nav-link-with-tooltip ${location.pathname === "/reservations/new" ? "active" : ""}`}
           data-tooltip="New Reservation"
         >
-          <Calendar size={20} />
+          {/* Changed to PlusCircle to distinguish from Calendar */}
+          <PlusCircle size={20} />
         </Link>
+
         <Link
           to="/members"
           className={`nav-link-with-tooltip ${location.pathname === "/members" ? "active" : ""}`}
@@ -74,6 +86,7 @@ export function NavBar() {
         >
           <FileText size={20} />
         </Link>
+
         {/* ADMIN LINK - Only show if user is admin */}
         {loggedIn && user?.is_admin && (
           <Link
