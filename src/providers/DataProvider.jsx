@@ -9,7 +9,7 @@ const CACHE_TTL_MS = 5 * 60 * 1000;
 
 // IMPORTANT: make this match your backend.
 // If your backend uses /dining-rooms/ then change this to "/dining-rooms/"
-const DINING_ROOMS_ENDPOINT = "/dining_rooms/";
+const DINING_ROOMS_ENDPOINT = "/dining-rooms/";
 
 export function DataProvider({ children }) {
   const { loggedIn } = useContext(AuthContext);
